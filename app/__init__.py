@@ -17,11 +17,14 @@ def create_app():
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = 'main.login'
+    login_manager.login_view = 'user.login'
     login_manager.login_message_category = 'info'
 
-    from app.routes import main
-    app.register_blueprint(main)
+    from app.user_routes import user
+    from app.admin_routes import admin
+
+    app.register_blueprint(user, url_prefix='/')
+    app.register_blueprint(admin, url_prefix='/admin')
 
     return app
 

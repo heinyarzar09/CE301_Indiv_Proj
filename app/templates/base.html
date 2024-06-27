@@ -8,29 +8,64 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">WebApp</a>
-        <div class="collapse navbar-collapse">
+        <a class="navbar-brand" href="{{ url_for('user.index') }}">WebApp</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.logout') }}">Logout</a>
+                        <a class="nav-link" href="{{ url_for('user.index') }}">Home</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="recipesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Recipes
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="recipesDropdown">
+                            <a class="dropdown-item" href="{{ url_for('user.add_recipe') }}">Add Recipes</a>
+                            <a class="dropdown-item" href="{{ url_for('user.edit_recipe') }}">Edit Recipes</a>
+                            <a class="dropdown-item" href="{{ url_for('user.delete_recipe') }}">Delete Recipes</a>
+                            <a class="dropdown-item" href="{{ url_for('user.comment_recipes') }}">Comment on Recipes</a>
+                            <a class="dropdown-item" href="{{ url_for('user.share_recipes') }}">Share Recipes</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="friendsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Friends
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="friendsDropdown">
+                            <a class="dropdown-item" href="{{ url_for('user.connect_friends') }}">Connect with Friends</a>
+                            <a class="dropdown-item" href="{{ url_for('user.share_recipes') }}">Share Recipes</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="shoppingListDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Shopping List
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="shoppingListDropdown">
+                            <a class="dropdown-item" href="{{ url_for('user.create_shopping_list') }}">Create Shopping List</a>
+                            <a class="dropdown-item" href="{{ url_for('user.add_to_shopping_list') }}">Add to Shopping List</a>
+                            <a class="dropdown-item" href="{{ url_for('user.export_shopping_list') }}">Export Shopping List</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user.earn_achievements') }}">Earn Achievements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>
                     </li>
                     {% if current_user.role == 'admin' %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Admin
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="adminDropdown">
-                                <a class="dropdown-item" href="{{ url_for('main.admin_users') }}">Manage Users</a>
-                            </div>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
                         </li>
                     {% endif %}
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.login') }}">Login</a>
+                        <a class="nav-link" href="{{ url_for('user.login') }}">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.register') }}">Register</a>
+                        <a class="nav-link" href="{{ url_for('user.register') }}">Register</a>
                     </li>
                 {% endif %}
             </ul>

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 
-{% block title %}Admin - Manage Users{% endblock %}
+{% block title %}Manage Users{% endblock %}
 
 {% block content %}
 <h2>Manage Users</h2>
@@ -22,7 +22,10 @@
             <td>{{ user.email }}</td>
             <td>{{ user.role }}</td>
             <td>
-                <a href="{{ url_for('main.admin_reset_password', user_id=user.id) }}" class="btn btn-warning btn-sm">Reset Password</a>
+                <a href="{{ url_for('admin.admin_reset_password', user_id=user.id) }}" class="btn btn-warning btn-sm">Reset Password</a>
+                <form action="{{ url_for('admin.admin_delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
             </td>
         </tr>
         {% endfor %}
