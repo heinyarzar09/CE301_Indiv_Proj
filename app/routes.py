@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db, bcrypt
-from app.forms import RegistrationForm, LoginForm
+from app.forms import RegistrationForm, LoginForm, AdminResetPasswordForm
 from app.models import User
 
 main = Blueprint('main', __name__)
@@ -44,3 +44,28 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('main.index'))
+
+@main.route('/admin/users')
+@login_required
+def admin_users():
+    if current_user.role != 'admin':
+        flash('You do not have permission to view this page.', 'danger')
+        return redirect(url_for('main.index'))
+    users = User.query.all()
+    return render_template('admin_users.html', users=users)
+
+@main.route('/admin/reset_password/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def admin_reset_password(user_id):
+    if current_user.role != 'admin':
+        flash('You do not have permission to view this page.', 'danger')
+        return redirect(url_for('main.index'))
+    user = User.query.get_or_404(user_id)
+    form = AdminResetPasswordForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user.password = hashed_password
+        db.session.commit()
+        flash(f'Password has been reset for user {user.username}.', 'success')
+        return redirect(url_for('main.admin_users'))
+    return render_template('admin_reset_password.html', form=form, user=user)
