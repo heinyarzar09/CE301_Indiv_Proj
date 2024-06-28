@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange
 from app.models import User
 
 class RegistrationForm(FlaskForm):
@@ -31,3 +31,13 @@ class AdminResetPasswordForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
+
+class ConversionForm(FlaskForm):
+    amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0)])
+    from_unit = SelectField('From Unit', choices=[('teaspoon', 'Teaspoon'), ('tablespoon', 'Tablespoon'), ('cup', 'Cup')], validators=[DataRequired()])
+    to_unit = SelectField('To Unit', choices=[('teaspoon', 'Teaspoon'), ('tablespoon', 'Tablespoon'), ('cup', 'Cup')], validators=[DataRequired()])
+    submit = SubmitField('Convert')
+
+class ToolForm(FlaskForm):
+    name = StringField('Tool Name', validators=[DataRequired(), Length(min=1, max=100)])
+    submit = SubmitField('Add Tool')

@@ -18,6 +18,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.index') }}">Home</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user.my_tools') }}">My Tools</a>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="recipesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Recipes
@@ -53,6 +56,9 @@
                         <a class="nav-link" href="{{ url_for('user.earn_achievements') }}">Earn Achievements</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user.conversion_tool') }}">Conversion Tool</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>
                     </li>
                     {% if current_user.role == 'admin' %}
@@ -71,6 +77,7 @@
             </ul>
         </div>
     </nav>
+    
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

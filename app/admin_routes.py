@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import current_user, login_required
-from app import db, bcrypt  # Import bcrypt here
+from app import db, bcrypt
 from app.forms import AdminResetPasswordForm
 from app.models import User
 
@@ -64,7 +64,10 @@ def admin_delete_user(user_id):
         return redirect(url_for('user.index'))
     user = User.query.get_or_404(user_id)
     if user:
+        for tool in user.tools:
+            db.session.delete(tool)
         db.session.delete(user)
         db.session.commit()
         flash(f'User {user.username} has been deleted.', 'success')
     return redirect(url_for('admin.manage_users'))
+
