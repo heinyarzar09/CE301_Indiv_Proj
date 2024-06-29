@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Automatic Recipe Conversion{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mt-4">Automatic Recipe Conversion</h2>
+    <form method="POST" action="{{ url_for('user.automatic_conversion') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.recipe_text.label(class="form-label") }}
+            {{ form.recipe_text(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+    {% if converted_recipe %}
+        <h3 class="mt-4">Converted Recipe:</h3>
+        <p>{{ converted_recipe }}</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Conversion Tool{% endblock %}
+{% block title %}Manual Recipe Conversion{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h2 class="mt-4">Cooking Utensil Conversion Tool</h2>
-    <form method="POST" action="{{ url_for('user.conversion_tool') }}">
+    <h2 class="mt-4">Manual Recipe Conversion</h2>
+    <form method="POST" action="{{ url_for('user.manual_conversion_tool') }}">
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.amount.label(class="form-label") }}

@@ -22,13 +22,12 @@ def create_app():
 
     from app.user_routes import user
     from app.admin_routes import admin
-
-    app.register_blueprint(user, url_prefix='/')
+    app.register_blueprint(user)
     app.register_blueprint(admin, url_prefix='/admin')
 
     return app
 
 @login_manager.user_loader
 def load_user(user_id):
-    from app.models import User  # Import inside the function to avoid circular import
+    from app.models import User
     return User.query.get(int(user_id))

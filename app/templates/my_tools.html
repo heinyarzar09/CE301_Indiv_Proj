@@ -15,8 +15,7 @@
             {{ form.submit(class="btn btn-primary") }}
         </div>
     </form>
-    <h3 class="mt-4">Tools List</h3>
-    <ul class="list-group">
+    <ul class="list-group mt-4">
         {% for tool in tools %}
             <li class="list-group-item">{{ tool.name }}</li>
         {% endfor %}

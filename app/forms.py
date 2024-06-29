@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField
+from wtforms.widgets import TextArea
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange
 from app.models import User
 
@@ -34,10 +35,38 @@ class AdminResetPasswordForm(FlaskForm):
 
 class ConversionForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired(), NumberRange(min=0)])
-    from_unit = SelectField('From Unit', choices=[('teaspoon', 'Teaspoon'), ('tablespoon', 'Tablespoon'), ('cup', 'Cup')], validators=[DataRequired()])
-    to_unit = SelectField('To Unit', choices=[('teaspoon', 'Teaspoon'), ('tablespoon', 'Tablespoon'), ('cup', 'Cup')], validators=[DataRequired()])
+    from_unit = SelectField('From Unit', choices=[
+        ('tsp', 'Teaspoon (tsp)'),
+        ('tbsp', 'Tablespoon (tbsp)'),
+        ('cup', 'Cup (cup)'),
+        ('fl oz', 'Fluid Ounce (fl oz)'),
+        ('pt', 'Pint (pt)'),
+        ('qt', 'Quart (qt)'),
+        ('gal', 'Gallon (gal)'),
+        ('oz', 'Ounce (oz)'),
+        ('lb', 'Pound (lb)'),
+        ('ml', 'Milliliter (ml)'),
+        ('g', 'Gram (g)'),
+    ], validators=[DataRequired()])
+    to_unit = SelectField('To Unit', choices=[
+        ('tsp', 'Teaspoon (tsp)'),
+        ('tbsp', 'Tablespoon (tbsp)'),
+        ('cup', 'Cup (cup)'),
+        ('fl oz', 'Fluid Ounce (fl oz)'),
+        ('pt', 'Pint (pt)'),
+        ('qt', 'Quart (qt)'),
+        ('gal', 'Gallon (gal)'),
+        ('oz', 'Ounce (oz)'),
+        ('lb', 'Pound (lb)'),
+        ('ml', 'Milliliter (ml)'),
+        ('g', 'Gram (g)'),
+    ], validators=[DataRequired()])
     submit = SubmitField('Convert')
 
 class ToolForm(FlaskForm):
     name = StringField('Tool Name', validators=[DataRequired(), Length(min=1, max=100)])
     submit = SubmitField('Add Tool')
+
+class RecipeConversionForm(FlaskForm):
+    recipe_text = StringField('Recipe', validators=[DataRequired()], widget=TextArea())
+    submit = SubmitField('Convert')
