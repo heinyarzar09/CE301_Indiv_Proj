@@ -69,4 +69,5 @@ class ToolForm(FlaskForm):
 
 class RecipeConversionForm(FlaskForm):
     recipe_text = StringField('Recipe', validators=[DataRequired()], widget=TextArea())
+    to_unit = SelectField('Convert to Unit', choices=[], validators=[DataRequired()])
     submit = SubmitField('Convert')

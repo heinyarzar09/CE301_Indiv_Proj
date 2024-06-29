@@ -1,3 +1,4 @@
+<!-- base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,17 +53,14 @@
                             <a class="dropdown-item" href="{{ url_for('user.export_shopping_list') }}">Export Shopping List</a>
                         </div>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="conversionDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Conversion
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="conversionDropdown">
-                            <a class="dropdown-item" href="{{ url_for('user.manual_conversion_tool') }}">Manual Recipe Conversion</a>
-                            <a class="dropdown-item" href="{{ url_for('user.automatic_conversion') }}">Automatic Recipe Conversion</a>
-                        </div>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.earn_achievements') }}">Achievements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user.manual_conversion_tool') }}">Manual Recipe Conversion</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user.automatic_conversion') }}">Automatic Recipe Conversion</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>
