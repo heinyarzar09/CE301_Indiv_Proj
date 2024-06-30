@@ -3,7 +3,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 from app import db, bcrypt
 from app.forms import RegistrationForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm
 from app.models import User, Tool
-from app.utils import convert_measurement, process_recipe, normalize_unit
+from app.utils import convert_measurement, process_recipe
 
 user = Blueprint('user', __name__)
 
@@ -61,7 +61,8 @@ def manual_conversion_tool():
             converted_amount = convert_measurement(amount, from_unit, to_unit)
             result = f"{amount} {from_unit} is {converted_amount} {to_unit}"
         except ValueError as e:
-            flash(str(e), 'danger')
+            result = str(e)
+            flash(result, 'danger')
     return render_template('manual_conversion_tool.html', form=form, result=result)
 
 @user.route('/automatic_conversion', methods=['GET', 'POST'])
@@ -70,17 +71,16 @@ def automatic_conversion():
     form = RecipeConversionForm()
     
     # Get user's tools
-    user_tools = Tool.query.filter_by(owner=current_user).all()
-    form.to_unit.choices = [(tool.name, tool.name) for tool in user_tools]
+    user_tools = Tool.query.filter_by(user_id=current_user.id).all()
+    form.to_unit.choices = [(f"{tool.name} ({tool.capacity} {tool.unit})", f"{tool.name} ({tool.capacity} {tool.unit})") for tool in user_tools]
     
     converted_recipe = None
     if form.validate_on_submit():
         recipe_text = form.recipe_text.data
-        to_unit = form.to_unit.data
-        try:
-            converted_recipe = process_recipe(recipe_text, to_unit, current_user.id)
-        except ValueError as e:
-            flash(str(e), 'danger')
+        to_unit = form.to_unit.data.split(' ')[0]  # Extract the tool name
+        converted_recipe = process_recipe(recipe_text, to_unit, current_user.id)
+        if not converted_recipe:
+            flash('Conversion is not supported.', 'danger')
     return render_template('automatic_conversion_tool.html', form=form, converted_recipe=converted_recipe)
 
 @user.route('/my_tools', methods=['GET', 'POST'])
@@ -88,16 +88,16 @@ def automatic_conversion():
 def my_tools():
     form = ToolForm()
     if form.validate_on_submit():
-        existing_tool = Tool.query.filter_by(name=form.name.data, owner=current_user).first()
+        existing_tool = Tool.query.filter_by(name=form.name.data, unit=form.unit.data, user_id=current_user.id).first()
         if existing_tool:
-            flash('Tool with the same name already exists.', 'danger')
+            flash('Tool with the same name and unit already exists.', 'danger')
         else:
-            tool = Tool(name=form.name.data, owner=current_user)
+            tool = Tool(name=form.name.data, unit=form.unit.data, capacity=form.capacity.data, user_id=current_user.id)
             db.session.add(tool)
             db.session.commit()
             flash('Tool has been added!', 'success')
             return redirect(url_for('user.my_tools'))
-    user_tools = Tool.query.filter_by(owner=current_user).all()
+    user_tools = Tool.query.filter_by(user_id=current_user.id).all()
     return render_template('my_tools.html', form=form, tools=user_tools)
 
 @user.route('/delete_tool/<int:tool_id>', methods=['POST'])
@@ -108,7 +108,7 @@ def delete_tool(tool_id):
         abort(403)
     db.session.delete(tool)
     db.session.commit()
-    flash('Tool has been deleted.', 'success')
+    flash('Tool has been deleted!', 'success')
     return redirect(url_for('user.my_tools'))
 
 # Placeholder routes for future features

@@ -64,10 +64,24 @@ class ConversionForm(FlaskForm):
     submit = SubmitField('Convert')
 
 class ToolForm(FlaskForm):
-    name = StringField('Tool Name', validators=[DataRequired(), Length(min=1, max=100)])
+    name = StringField('Tool Name', validators=[DataRequired()])
+    unit = SelectField('Unit', choices=[
+        ('tsp', 'Teaspoon (tsp)'),
+        ('tbsp', 'Tablespoon (tbsp)'),
+        ('cup', 'Cup (cup)'),
+        ('fl oz', 'Fluid Ounce (fl oz)'),
+        ('pt', 'Pint (pt)'),
+        ('qt', 'Quart (qt)'),
+        ('gal', 'Gallon (gal)'),
+        ('oz', 'Ounce (oz)'),
+        ('lb', 'Pound (lb)'),
+        ('ml', 'Milliliter (ml)'),
+        ('g', 'Gram (g)'),
+    ], validators=[DataRequired()])
+    capacity = FloatField('Capacity', validators=[DataRequired(), NumberRange(min=0)])
     submit = SubmitField('Add Tool')
 
 class RecipeConversionForm(FlaskForm):
-    recipe_text = StringField('Recipe', validators=[DataRequired()], widget=TextArea())
-    to_unit = SelectField('Convert to Unit', choices=[], validators=[DataRequired()])
+    recipe_text = StringField('Recipe', validators=[DataRequired()])
+    to_unit = SelectField('Convert to Unit', choices=[])
     submit = SubmitField('Convert')
