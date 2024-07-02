@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, url_for, flash, redirect, request, jsonify, abort
+from flask import Blueprint, render_template, url_for, flash, redirect, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db, bcrypt
-from app.forms import RegistrationForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm
+from app.forms import RegisterForm, LoginForm, ResetPasswordForm, ConversionForm, ToolForm, RecipeConversionForm
 from app.models import User, Tool
-from app.utils import convert_measurement, process_recipe, normalize_unit
+from app.utils import convert_measurement, process_recipe
 
 user = Blueprint('user', __name__)
 
@@ -30,17 +30,22 @@ def login():
 
 @user.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('user.index'))
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, password=hashed_password, role=form.role.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('Your account has been created! You are now able to log in.', 'success')
-        return redirect(url_for('user.login'))
-    return render_template('register.html', form=form)
+    form = RegisterForm()
+    if request.method == 'POST' and form.validate():
+        if form.password.data != form.confirm_password.data:
+            flash('Password and Confirm Password do not match.', 'danger')
+        else:
+            hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+            new_user = User(username=form.username.data, email=form.email.data, password=hashed_password, role=form.role.data)
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Your account has been created! You are now able to log in', 'success')
+            return redirect(url_for('user.login'))
+    elif form.errors:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{field}: {error}", 'danger')
+    return render_template('register.html', title='Register', form=form)
 
 @user.route('/logout')
 def logout():
