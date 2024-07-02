@@ -39,12 +39,15 @@ def register():
         if form.password.data != form.confirm_password.data:
             flash('Password and Confirm Password do not match.', 'danger')
         else:
-            existing_user_by_username = User.query.filter_by(username=form.username.data).first()
-            existing_user_by_email = User.query.filter_by(email=form.email.data).first()
-            if existing_user_by_username:
-                flash('That username is taken. Please choose a different one.', 'danger')
-            elif existing_user_by_email:
-                flash('That email is already in use. Please choose a different one.', 'danger')
+            existing_user = User.query.filter(
+                (User.username == form.username.data) | 
+                (User.email == form.email.data)
+            ).first()
+            if existing_user:
+                if existing_user.username == form.username.data:
+                    flash('That username is taken. Please choose a different one.', 'danger')
+                if existing_user.email == form.email.data:
+                    flash('That email is already in use. Please choose a different one.', 'danger')
             else:
                 hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
                 new_user = User(username=form.username.data, email=form.email.data, password=hashed_password, role=form.role.data)
@@ -57,6 +60,7 @@ def register():
             for error in errors:
                 flash(f"{error}", 'danger')
     return render_template('register.html', title='Register', form=form)
+
 
 @user.route('/logout')
 def logout():
