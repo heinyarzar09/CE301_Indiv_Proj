@@ -32,7 +32,6 @@ def login():
                 flash(f"{error}", 'danger')
     return render_template('login.html', form=form)
 
-
 @user.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -40,21 +39,24 @@ def register():
         if form.password.data != form.confirm_password.data:
             flash('Password and Confirm Password do not match.', 'danger')
         else:
-            hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-            new_user = User(username=form.username.data, email=form.email.data, password=hashed_password, role=form.role.data)
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Your account has been created! You are now able to log in', 'success')
-            return redirect(url_for('user.login'))
+            existing_user_by_username = User.query.filter_by(username=form.username.data).first()
+            existing_user_by_email = User.query.filter_by(email=form.email.data).first()
+            if existing_user_by_username:
+                flash('That username is taken. Please choose a different one.', 'danger')
+            elif existing_user_by_email:
+                flash('That email is already in use. Please choose a different one.', 'danger')
+            else:
+                hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+                new_user = User(username=form.username.data, email=form.email.data, password=hashed_password, role=form.role.data)
+                db.session.add(new_user)
+                db.session.commit()
+                flash('Your account has been created! You are now able to log in', 'success')
+                return redirect(url_for('user.login'))
     elif form.errors:
         for field, errors in form.errors.items():
             for error in errors:
-                if field == 'email' and 'Invalid email address.' in error:
-                    flash('Invalid email address.', 'danger')
-                else:
-                    flash(f"{field}: {error}", 'danger')
+                flash(f"{error}", 'danger')
     return render_template('register.html', title='Register', form=form)
-
 
 @user.route('/logout')
 def logout():
