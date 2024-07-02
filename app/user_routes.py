@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db, bcrypt
-from app.forms import RegisterForm, LoginForm, ResetPasswordForm, ConversionForm, ToolForm, RecipeConversionForm
+from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm
 from app.models import User, Tool
 from app.utils import convert_measurement, process_recipe
 
@@ -26,7 +26,12 @@ def login():
             return redirect(next_page) if next_page else redirect(url_for('user.index'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
+    elif form.errors:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{error}", 'danger')
     return render_template('login.html', form=form)
+
 
 @user.route('/register', methods=['GET', 'POST'])
 def register():
@@ -44,8 +49,12 @@ def register():
     elif form.errors:
         for field, errors in form.errors.items():
             for error in errors:
-                flash(f"{field}: {error}", 'danger')
+                if field == 'email' and 'Invalid email address.' in error:
+                    flash('Invalid email address.', 'danger')
+                else:
+                    flash(f"{field}: {error}", 'danger')
     return render_template('register.html', title='Register', form=form)
+
 
 @user.route('/logout')
 def logout():
@@ -75,13 +84,13 @@ def automatic_conversion():
     form = RecipeConversionForm()
     
     # Get user's tools
-    user_tools = Tool.query.filter_by(owner=current_user).all()
-    form.to_unit.choices = [(tool.name, tool.name) for tool in user_tools]
+    user_tools = Tool.query.filter_by(owner_id=current_user.id).all()
+    form.to_unit.choices = [(f"{tool.name} - {tool.unit}", f"{tool.name} - {tool.unit}") for tool in user_tools]
     
     converted_recipe = None
     if form.validate_on_submit():
         recipe_text = form.recipe_text.data
-        to_unit = form.to_unit.data
+        to_unit = form.to_unit.data.split(' - ')[1]  # Extract the unit part
         try:
             converted_recipe = process_recipe(recipe_text, to_unit, current_user.id)
         except ValueError as e:
@@ -91,19 +100,25 @@ def automatic_conversion():
 @user.route('/my_tools', methods=['GET', 'POST'])
 @login_required
 def my_tools():
-    form = ToolForm()
+    form = ToolForm(user_id=current_user.id)
     if form.validate_on_submit():
-        existing_tool = Tool.query.filter_by(name=form.name.data, owner=current_user).first()
+        # Check for duplicate tool
+        existing_tool = Tool.query.filter_by(name=form.name.data, unit=form.unit.data, owner_id=current_user.id).first()
         if existing_tool:
-            flash('Tool with the same name already exists.', 'danger')
+            flash('This tool with the same unit already exists. Please choose a different name or unit.', 'danger')
         else:
-            tool = Tool(name=form.name.data, owner=current_user)
+            tool = Tool(name=form.name.data, unit=form.unit.data, owner_id=current_user.id)
             db.session.add(tool)
             db.session.commit()
             flash('Tool has been added!', 'success')
             return redirect(url_for('user.my_tools'))
-    user_tools = Tool.query.filter_by(owner=current_user).all()
-    return render_template('my_tools.html', form=form, tools=user_tools)
+    elif form.errors:
+        # Handle other form errors
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{error}", 'danger')
+    tools = Tool.query.filter_by(owner_id=current_user.id).all()
+    return render_template('my_tools.html', title='My Tools', form=form, tools=tools)
 
 @user.route('/delete_tool/<int:tool_id>', methods=['POST'])
 @login_required

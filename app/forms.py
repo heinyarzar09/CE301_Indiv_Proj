@@ -1,8 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField
-from wtforms.widgets import TextArea
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange
-from app.models import User
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField
+from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange
+from app.models import User, Tool
 
 class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
@@ -64,10 +63,33 @@ class ConversionForm(FlaskForm):
     submit = SubmitField('Convert')
 
 class ToolForm(FlaskForm):
-    name = StringField('Tool Name', validators=[DataRequired(), Length(min=1, max=100)])
+    name = StringField('Tool Name', validators=[DataRequired()])
+    unit = SelectField('Unit', choices=[
+        ('tsp', 'Teaspoon (tsp)'),
+        ('tbsp', 'Tablespoon (tbsp)'),
+        ('cup', 'Cup (cup)'),
+        ('fl oz', 'Fluid Ounce (fl oz)'),
+        ('pt', 'Pint (pt)'),
+        ('qt', 'Quart (qt)'),
+        ('gal', 'Gallon (gal)'),
+        ('oz', 'Ounce (oz)'),
+        ('lb', 'Pound (lb)'),
+        ('ml', 'Milliliter (ml)'),
+        ('g', 'Gram (g)'),
+    ], validators=[DataRequired()])
     submit = SubmitField('Add Tool')
 
+    def __init__(self, *args, **kwargs):
+        self.user_id = kwargs.pop('user_id', None)
+        super(ToolForm, self).__init__(*args, **kwargs)
+
+    def validate_name(self, name):
+        if self.user_id is not None:
+            tool = Tool.query.filter_by(name=name.data, unit=self.unit.data, owner_id=self.user_id).first()
+            if tool:
+                raise ValidationError('This tool with the same unit already exists. Please choose a different name or unit.')
+
 class RecipeConversionForm(FlaskForm):
-    recipe_text = StringField('Recipe', validators=[DataRequired()], widget=TextArea())
-    to_unit = SelectField('Convert to Unit', choices=[], validators=[DataRequired()])
+    recipe_text = TextAreaField('Recipe', validators=[DataRequired()])
+    to_unit = SelectField('Convert to', validators=[DataRequired()])
     submit = SubmitField('Convert')

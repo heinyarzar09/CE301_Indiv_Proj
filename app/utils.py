@@ -1,7 +1,38 @@
 import re
 from fractions import Fraction
 
-from app.models import Tool
+UNIT_MAPPING = {
+    'teaspoon': 'tsp',
+    'teaspoons': 'tsp',
+    'tbsp': 'tbsp',
+    'tablespoon': 'tbsp',
+    'tablespoons': 'tbsp',
+    'cup': 'cup',
+    'cups': 'cup',
+    'fluid ounce': 'fl oz',
+    'fluid ounces': 'fl oz',
+    'fl oz': 'fl oz',
+    'pint': 'pt',
+    'pints': 'pt',
+    'quart': 'qt',
+    'quarts': 'qt',
+    'gallon': 'gal',
+    'gallons': 'gal',
+    'ounce': 'oz',
+    'ounces': 'oz',
+    'lb': 'lb',
+    'pound': 'lb',
+    'pounds': 'lb',
+    'milliliter': 'ml',
+    'milliliters': 'ml',
+    'ml': 'ml',
+    'gram': 'g',
+    'grams': 'g',
+    'g': 'g'
+}
+
+def normalize_unit(unit):
+    return UNIT_MAPPING.get(unit.lower(), unit)
 
 def convert_measurement(amount, from_unit, to_unit):
     conversions = {
@@ -43,7 +74,7 @@ def process_recipe(recipe_text, to_unit, user_id):
         elif word.isdigit():
             quantity = float(word)
         elif word in UNIT_MAPPING:
-            unit = UNIT_MAPPING[word]
+            unit = normalize_unit(word)
             try:
                 converted_quantity = convert_measurement(quantity, unit, to_unit)
                 result.append(f"{converted_quantity} {to_unit}")
@@ -52,36 +83,3 @@ def process_recipe(recipe_text, to_unit, user_id):
         else:
             result.append(word)
     return ' '.join(result)
-
-UNIT_MAPPING = {
-    'teaspoon': 'tsp',
-    'teaspoons': 'tsp',
-    'tbsp': 'tbsp',
-    'tablespoon': 'tbsp',
-    'tablespoons': 'tbsp',
-    'cup': 'cup',
-    'cups': 'cup',
-    'fluid ounce': 'fl oz',
-    'fluid ounces': 'fl oz',
-    'fl oz': 'fl oz',
-    'pint': 'pt',
-    'pints': 'pt',
-    'quart': 'qt',
-    'quarts': 'qt',
-    'gallon': 'gal',
-    'gallons': 'gal',
-    'ounce': 'oz',
-    'ounces': 'oz',
-    'lb': 'lb',
-    'pound': 'lb',
-    'pounds': 'lb',
-    'milliliter': 'ml',
-    'milliliters': 'ml',
-    'ml': 'ml',
-    'gram': 'g',
-    'grams': 'g',
-    'g': 'g'
-}
-
-def normalize_unit(unit):
-    return UNIT_MAPPING.get(unit.lower(), unit)

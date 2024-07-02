@@ -12,6 +12,10 @@
             {{ form.name(class="form-control") }}
         </div>
         <div class="form-group">
+            {{ form.unit.label(class="form-label") }}
+            {{ form.unit(class="form-control") }}
+        </div>
+        <div class="form-group">
             {{ form.submit(class="btn btn-primary") }}
         </div>
     </form>
@@ -19,7 +23,7 @@
     <ul class="list-group">
         {% for tool in tools %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ tool.name }}
+                {{ tool.name }} - {{ tool.unit }}
                 <form method="POST" action="{{ url_for('user.delete_tool', tool_id=tool.id) }}" style="display:inline;">
                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                 </form>
