@@ -10,7 +10,7 @@ bcrypt = Bcrypt()
 login_manager = LoginManager()
 
 def create_app():
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__, static_folder='app/static', instance_relative_config=True)
     app.config.from_object(Config)
     os.makedirs(app.instance_path, exist_ok=True)
 
@@ -20,10 +20,13 @@ def create_app():
     login_manager.login_view = 'user.login'
     login_manager.login_message_category = 'info'
 
-    from app.user_routes import user
+    from app.user_routes import user, add_icons_to_achievements
     from app.admin_routes import admin
     app.register_blueprint(user)
     app.register_blueprint(admin, url_prefix='/admin')
+
+    with app.app_context():
+        add_icons_to_achievements(app)
 
     return app
 

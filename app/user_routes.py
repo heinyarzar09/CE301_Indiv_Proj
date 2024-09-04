@@ -2,8 +2,10 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db, bcrypt
 from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm
-from app.models import User, Tool
+from app.models import User, Tool, Achievement, UserAchievement
 from app.utils import convert_measurement, process_recipe
+from app.forms import AchievementTrackingForm
+from app.achievements import check_achievements 
 
 user = Blueprint('user', __name__)
 
@@ -133,6 +135,160 @@ def delete_tool(tool_id):
     flash('Tool has been deleted.', 'success')
     return redirect(url_for('user.my_tools'))
 
+@user.route('/complete_recipe/<int:recipe_id>', methods=['POST'])
+@login_required
+def complete_recipe(recipe_id):
+    # Logic to handle recipe completion...
+    
+    # Update the user's completed recipes count
+    current_user.completed_recipes += 1
+    db.session.commit()
+    
+    # Check for achievements (ensure check_achievements is implemented)
+    check_achievements(current_user)
+    
+    flash("Recipe completed!", "success")
+    return redirect(url_for('user.my_tools'))
+
+def check_achievements(user):
+    achievements = Achievement.query.all()
+    for achievement in achievements:
+        if achievement.criteria == 'Complete 20 Recipes' and user.completed_recipes >= 20:
+            if not UserAchievement.query.filter_by(user_id=user.id, achievement_id=achievement.id).first():
+                new_achievement = UserAchievement(user_id=user.id, achievement_id=achievement.id, date_achieved=datetime.utcnow())
+                db.session.add(new_achievement)
+                db.session.commit()
+
+    # Achievement: First Recipe Completed
+    if user.completed_recipes >= 1:
+        award_achievement(user, 'First Recipe Completed')
+
+    # Achievement: Master Chef
+    if user.completed_recipes >= 10:
+        award_achievement(user, 'Master Chef')
+
+    # Achievement: Recipe Creator
+    if user.recipes_created >= 1:
+        award_achievement(user, 'Recipe Creator')
+
+    # Achievement: Social Butterfly
+    if user.recipes_shared >= 1:
+        award_achievement(user, 'Social Butterfly')
+
+    # Comment out or remove the following block if 'friends_connected' is not used
+    # Achievement: Friend Connector
+    # if user.friends_connected >= 5:
+    #     award_achievement(user, 'Friend Connector')
+
+    # Achievement: Shopping Expert
+    if user.shopping_lists_created >= 3:
+        award_achievement(user, 'Shopping Expert')
+
+    # Achievement: Conversion Master
+    if user.conversion_tool_uses >= 5:
+        award_achievement(user, 'Conversion Master')
+
+def award_achievement(user, achievement_name):
+    achievement = Achievement.query.filter_by(name=achievement_name).first()
+    if achievement:
+        # Check if the user already has this achievement
+        if not UserAchievement.query.filter_by(user_id=user.id, achievement_id=achievement.id).first():
+            user_achievement = UserAchievement(user_id=user.id, achievement_id=achievement.id)
+            db.session.add(user_achievement)
+            db.session.commit()
+            flash(f"Congratulations! You've earned the '{achievement_name}' achievement.", 'success')
+
+def add_icons_to_achievements(app):
+    with app.app_context():
+        achievements = Achievement.query.all()
+        for achievement in achievements:
+            if achievement.name == 'Complete 20 Recipes':
+                achievement.icon_url = '/static/icons/completed_20_recipes.png'
+            elif achievement.name == 'Create 10 Recipes':
+                achievement.icon_url = '/static/icons/create_10_recipes.png'
+            # Add more conditions for other achievements here
+            db.session.commit()
+
+@user.route('/manage_achievements')
+@login_required
+def manage_achievements():
+    if current_user.role != 'admin':
+        abort(403)
+    add_icons_to_achievements()
+    flash("Achievements icons updated successfully.", "success")
+    return redirect(url_for('user.index'))
+
+@user.route('/track_achievement', methods=['POST'])
+@login_required
+def track_achievement():
+    form = AchievementTrackingForm()
+    if form.validate_on_submit():
+        # Assuming you have a UserAchievement model and criteria to check against
+        achievement_name = form.achievement_name.data
+        progress = form.progress.data
+
+        # Here you can add logic to update or track the user's achievement progress
+        # For example, update an existing UserAchievement or create a new one
+
+        flash(f"Your progress for {achievement_name} has been updated to {progress}!", "success")
+        return redirect(url_for('user.achievements'))
+    
+    flash("Failed to track achievement.", "danger")
+    return redirect(url_for('user.achievements'))
+
+@user.route('/achievements', methods=['GET', 'POST'])
+@login_required
+def achievements():
+    form = AchievementTrackingForm()
+    user_achievements = UserAchievement.query.filter_by(user_id=current_user.id).all()
+
+    if form.validate_on_submit():
+        achievement_name = form.achievement_name.data
+        progress = form.progress.data
+
+        # Update the user's progress for the specified achievement
+        if achievement_name == 'Completed Recipes':
+            current_user.completed_recipes += progress
+        elif achievement_name == 'Recipes Created':
+            current_user.recipes_created += progress
+        elif achievement_name == 'Recipes Shared':
+            current_user.recipes_shared += progress
+
+        db.session.commit()
+
+        # Check if the user has earned any new achievements
+        check_achievements(current_user)
+
+        flash('Achievement progress updated!', 'success')
+        return redirect(url_for('user.achievements'))
+
+    return render_template('achievements.html', form=form, user=current_user, achievements=user_achievements)
+
+@user.route('/increment_achievement/<int:achievement_id>', methods=['POST'])
+@login_required
+def increment_achievement(achievement_id):
+    if achievement_id == 1:
+        current_user.completed_recipes += 1
+    elif achievement_id == 2:
+        current_user.recipes_created += 1
+    elif achievement_id == 3:
+        current_user.recipes_shared += 1
+
+    db.session.commit()
+    check_achievements(current_user)
+    
+    flash("Achievement progress incremented!", "success")
+    return redirect(url_for('user.achievements'))
+
+
+
+
+
+
+
+
+
+
 # Placeholder routes for future features
 @user.route('/add_recipe')
 @login_required
@@ -163,11 +319,6 @@ def share_recipes():
 @login_required
 def comment_recipes():
     return render_template('placeholder.html', feature="Comment on Recipes")
-
-@user.route('/earn_achievements')
-@login_required
-def earn_achievements():
-    return render_template('placeholder.html', feature="Earn Achievements")
 
 @user.route('/create_shopping_list')
 @login_required

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Your Achievements</h2>
+
+{% set completed_recipes_percentage = (user.completed_recipes / 20) * 100 %}
+{% set recipes_created_percentage = (user.recipes_created / 10) * 100 %}
+{% set recipes_shared_percentage = (user.recipes_shared / 5) * 100 %}
+
+<div>
+    <p>Completed Recipes: {{ user.completed_recipes }} 
+        <form action="{{ url_for('user.increment_achievement', achievement_id=1) }}" method="POST">  
+            <button type="submit" class="btn btn-primary">Increment</button>
+        </form>
+    </p>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" 
+             style="width: {{ completed_recipes_percentage }}%;" 
+             aria-valuenow="{{ user.completed_recipes }}" 
+             aria-valuemin="0" 
+             aria-valuemax="20">
+             {{ user.completed_recipes }}/20
+        </div>
+    </div>
+
+    <p>Recipes Created: {{ user.recipes_created }} 
+        <form action="{{ url_for('user.increment_achievement', achievement_id=2) }}" method="POST">  
+            <button type="submit" class="btn btn-primary">Increment</button>
+        </form>
+    </p>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" 
+             style="width: {{ recipes_created_percentage }}%;" 
+             aria-valuenow="{{ user.recipes_created }}" 
+             aria-valuemin="0" 
+             aria-valuemax="10">
+             {{ user.recipes_created }}/10
+        </div>
+    </div>
+
+    <p>Recipes Shared: {{ user.recipes_shared }} 
+        <form action="{{ url_for('user.increment_achievement', achievement_id=3) }}" method="POST">  
+            <button type="submit" class="btn btn-primary">Increment</button>
+        </form>
+    </p>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" 
+             style="width: {{ recipes_shared_percentage }}%;" 
+             aria-valuenow="{{ user.recipes_shared }}" 
+             aria-valuemin="0" 
+             aria-valuemax="5">
+             {{ user.recipes_shared }}/5
+        </div>
+    </div>
+</div>
+
+<h3>Earned Achievements</h3>
+<ul>
+    {% for achievement in achievements %}
+        <li>
+            <img src="{{ url_for('static', filename='icons/' + achievement.icon_url) }}" alt="{{ achievement.name }} icon"> 
+            {{ achievement.name }} - Earned on {{ achievement.date_achieved }}
+        </li>
+    {% else %}
+        <li>You haven't earned any achievements yet. Keep cooking!</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

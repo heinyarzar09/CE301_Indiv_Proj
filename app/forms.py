@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange
 from app.models import User, Tool
 
@@ -93,3 +93,8 @@ class RecipeConversionForm(FlaskForm):
     recipe_text = TextAreaField('Recipe', validators=[DataRequired()])
     to_unit = SelectField('Convert to', validators=[DataRequired()])
     submit = SubmitField('Convert')
+
+class AchievementTrackingForm(FlaskForm):
+    achievement_name = StringField('Achievement Name', validators=[DataRequired()])
+    progress = IntegerField('Progress', validators=[DataRequired()])
+    submit = SubmitField('Update Achievement')
