@@ -1,5 +1,5 @@
 from flask_login import UserMixin
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 class User(db.Model, UserMixin):
@@ -35,9 +35,9 @@ class Achievement(db.Model):
     icon_url = db.Column(db.String(255), nullable=True)  # URL to the achievement icon
 
 class UserAchievement(db.Model):
-    __tablename__ = 'user_achievements'  # Ensure this matches your database table name
+    __tablename__ = 'user_achievements'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     achievement_id = db.Column(db.Integer, db.ForeignKey('achievements.id'), nullable=False)
-    date_achieved = db.Column(db.Date, default=datetime.utcnow)
+    date_achieved = db.Column(db.Date, default=datetime.now(timezone.utc))
     achievement = db.relationship('Achievement', backref='user_achievements', lazy=True)

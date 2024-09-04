@@ -6,6 +6,7 @@ from app.models import User, Tool, Achievement, UserAchievement
 from app.utils import convert_measurement, process_recipe
 from app.forms import AchievementTrackingForm
 from app.achievements import check_achievements 
+from datetime import datetime
 
 user = Blueprint('user', __name__)
 

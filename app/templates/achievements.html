@@ -56,10 +56,10 @@
 
 <h3>Earned Achievements</h3>
 <ul>
-    {% for achievement in achievements %}
+    {% for user_achievement in achievements %}
         <li>
-            <img src="{{ url_for('static', filename='icons/' + achievement.icon_url) }}" alt="{{ achievement.name }} icon"> 
-            {{ achievement.name }} - Earned on {{ achievement.date_achieved }}
+            <img src="{{ url_for('static', filename='images/cat.png') }}"> 
+            {{ user_achievement.achievement.name }} - Earned on {{ user_achievement.date_achieved }}
         </li>
     {% else %}
         <li>You haven't earned any achievements yet. Keep cooking!</li>
