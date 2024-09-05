@@ -6,7 +6,7 @@ from app.models import User
 
 admin = Blueprint('admin', __name__)
 
-@admin.route('/dashboard')
+@app.route('/dashboard')
 @login_required
 def dashboard():
     if current_user.role != 'admin':
@@ -14,7 +14,7 @@ def dashboard():
         return redirect(url_for('user.index'))
     return render_template('admin_dashboard.html')
 
-@admin.route('/manage_users')
+@app.route('/manage_users')
 @login_required
 def manage_users():
     if current_user.role != 'admin':
@@ -23,7 +23,7 @@ def manage_users():
     users = User.query.all()
     return render_template('admin_manage_users.html', users=users)
 
-@admin.route('/manage_recipes')
+@app.route('/manage_recipes')
 @login_required
 def manage_recipes():
     if current_user.role != 'admin':
@@ -32,7 +32,7 @@ def manage_recipes():
     # Add logic to manage recipes
     return render_template('admin_manage_recipes.html')
 
-@admin.route('/settings')
+@app.route('/settings')
 @login_required
 def settings():
     if current_user.role != 'admin':
@@ -40,7 +40,7 @@ def settings():
         return redirect(url_for('user.index'))
     return render_template('admin_settings.html')
 
-@admin.route('/admin/reset_password/<int:user_id>', methods=['GET', 'POST'])
+@app.route('/admin/reset_password/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def admin_reset_password(user_id):
     user = User.query.get_or_404(user_id)
@@ -62,7 +62,7 @@ def admin_reset_password(user_id):
                 flash(f"{field}: {error}", 'danger')
     return render_template('admin_reset_password.html', title='Reset Password', form=form, user=user)
 
-@admin.route('/delete_user/<int:user_id>', methods=['POST'])
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
 @login_required
 def admin_delete_user(user_id):
     if current_user.role != 'admin':
