@@ -58,7 +58,7 @@
 <ul>
     {% for user_achievement in achievements %}
         <li>
-            <img src="{{ url_for('static', filename='images/cat.png') }}"> 
+            <img src="{{ url_for('static', filename='images/create_10_recipes.png') }}"> 
             {{ user_achievement.achievement.name }} - Earned on {{ user_achievement.date_achieved }}
         </li>
     {% else %}
