@@ -1,0 +1,19 @@
+<h2>All Users</h2>  {# Heading for the list of all users #}
+
+<ul style="list-style-type: none;">  {# Unordered list to display all users, with no bullet points #}
+    {% for user in users %}  {# Loop through each user in the "users" list provided by the view function #}
+        <li>
+            <span>{{ user.username }}</span>  {# Display the username of the user #}
+            
+            {% if user.id != current_user.id %}  {# If the user is not the current logged-in user #}
+                <!-- Form to add a friend, submitted when the "Add Friend" button is clicked -->
+                <form action="{{ url_for('add_friend', friend_id=user.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-primary btn-sm">Add Friend</button>  
+                    {# Render the "Add Friend" button with Bootstrap's primary button styling and small size #}
+                </form>
+            {% else %}
+                <span>(You)</span>  {# Indicate that this user is the currently logged-in user #}
+            {% endif %}
+        </li>
+    {% endfor %}  {# End of the for loop to iterate through all users #}
+</ul>

@@ -1,0 +1,24 @@
+{% extends "base.html" %}  {# Inherit from the base template to maintain consistent structure and styles #}
+
+{% block content %}  {# Define the content block that will be injected into the "base.html" #}
+    <h2>Posts</h2>  {# Heading for the posts section #}
+
+    <ul>
+        {% for post in posts %}  {# Iterate over each post in the "posts" list provided by the view function #}
+            <li>
+                <!-- Display the post message -->
+                <p>{{ post.message }}</p>
+
+                <!-- Display the image associated with the post -->
+                <img src="{{ url_for('static', filename='uploads/' + post.image_file) }}" alt="Post image" width="200">
+                {# Use the url_for function to generate the URL for the image file stored in the "static/uploads" directory #}
+                {# Set the image width to 200px for a consistent display size #}
+
+                <!-- Display the date when the post was created and the author's username -->
+                <small>Posted on {{ post.date_posted.strftime('%Y-%m-%d') }} by {{ post.author.username }}</small>
+                {# Format the "date_posted" field to display only the year, month, and day #}
+                {# Display the username of the author of the post #}
+            </li>
+        {% endfor %}  {# End of the for loop to iterate through all posts #}
+    </ul>
+{% endblock %}  {# End of the content block #}

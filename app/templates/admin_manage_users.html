@@ -1,34 +1,42 @@
-{% extends "admin_base.html" %}
+{% extends "admin_base.html" %}  {# Inherit from the admin base template to maintain consistent structure and styles for admin pages #}
 
-{% block title %}Manage Users{% endblock %}
+{% block title %}Manage Users{% endblock %}  {# Set the page title to "Manage Users" for display in the browser tab #}
 
-{% block content %}
-<h2>Manage Users</h2>
-<table class="table">
-    <thead>
+{% block content %}  {# Define the content block to insert specific content for the Manage Users page #}
+<h2>Manage Users</h2>  {# Page heading for the user management section #}
+
+<!-- Table for displaying the list of users with management options -->
+<table class="table">  {# Use Bootstrap's table class for a styled, responsive table #}
+    <thead>  {# Table header section #}
         <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
+            <th>ID</th>  {# Column for user ID #}
+            <th>Username</th>  {# Column for username #}
+            <th>Email</th>  {# Column for email #}
+            <th>Role</th>  {# Column for user role (e.g., admin or user) #}
+            <th>Actions</th>  {# Column for action buttons like reset password and delete #}
         </tr>
     </thead>
-    <tbody>
-        {% for user in users %}
+    <tbody>  {# Table body section #}
+        {% for user in users %}  {# Loop through each user in the "users" list provided by the view function #}
         <tr>
-            <td>{{ user.id }}</td>
-            <td>{{ user.username }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.role }}</td>
-            <td>
-                <a href="{{ url_for('admin.admin_reset_password', user_id=user.id) }}" class="btn btn-warning btn-sm">Reset Password</a>
+            <td>{{ user.id }}</td>  {# Display the user's ID #}
+            <td>{{ user.username }}</td>  {# Display the user's username #}
+            <td>{{ user.email }}</td>  {# Display the user's email address #}
+            <td>{{ user.role }}</td>  {# Display the user's role (e.g., admin or user) #}
+            <td>  {# Actions for managing each user #}
+                <!-- Link to reset the user's password -->
+                <a href="{{ url_for('admin.admin_reset_password', user_id=user.id) }}" class="btn btn-warning btn-sm">Reset Password</a>  
+                {# Render a button link with Bootstrap's btn-warning class for resetting the user's password #}
+                
+                <!-- Form to delete the user -->
                 <form action="{{ url_for('admin.admin_delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>  
+                    {# Render a delete button with Bootstrap's btn-danger class for visual indication of danger #}
+                    {# The form's display:inline style keeps the delete button on the same line as other actions #}
                 </form>
             </td>
         </tr>
-        {% endfor %}
+        {% endfor %}  {# End of the for loop to iterate through all users #}
     </tbody>
 </table>
-{% endblock %}
+{% endblock %}  {# End of the content block #}

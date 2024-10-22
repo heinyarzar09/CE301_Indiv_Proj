@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Notifications</h1>
+
+    <!-- Incoming Friend Requests Section -->
+    <div class="mb-4">
+        <h3>Incoming Friend Requests</h3>
+        {% if incoming_requests %}
+        <ul class="list-group">
+            {% for request in incoming_requests %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ request.user.username }}
+                <div>
+                    <form action="{{ url_for('user.approve_friend_request', request_id=request.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-primary btn-sm">Accept</button>
+                    </form>
+                    <form action="{{ url_for('user.reject_friend_request', request_id=request.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No incoming friend requests.</p>
+        {% endif %}
+    </div>
+
+    <!-- Sent Friend Requests Section -->
+    <div class="mb-4">
+        <h3>Sent Friend Requests</h3>
+        {% if outgoing_requests %}
+        <ul class="list-group">
+            {% for request in outgoing_requests %}
+            <li class="list-group-item">
+                {{ request.friend.username }}
+                <span class="badge badge-warning">Pending</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No sent friend requests.</p>
+        {% endif %}
+    </div>
+
+    <!-- Recently Followed Section -->
+    <div>
+        <h3>Recently Followed</h3>
+        {% if recent_follows %}
+        <ul class="list-group">
+            {% for follow in recent_follows %}
+            <li class="list-group-item">
+                {{ follow.friend.username }} followed you on {{ follow.date_created.strftime('%b %d, %Y') }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No recent follows.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

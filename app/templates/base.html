@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <meta charset="UTF-8">  {# Specifies the character encoding for the document #}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  {# Ensures the page is responsive, especially on mobile devices #}
+    <title>{% block title %}{% endblock %}</title>  {# Placeholder for setting the page title dynamically #}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">  {# Link to Bootstrap CSS for styling #}
 </head>
 <body>
+    <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="{{ url_for('user.index') }}">CookMaster</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +22,8 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.my_tools') }}">My Tools</a>
                     </li>
+    
+                    <!-- Dropdown menu for recipes -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="recipesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Recipes
@@ -33,15 +36,25 @@
                             <a class="dropdown-item" href="{{ url_for('user.share_recipes') }}">Share Recipes</a>
                         </div>
                     </li>
+    
+                    <!-- Dropdown menu for friends -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="friendsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Friends
                         </a>
                         <div class="dropdown-menu" aria-labelledby="friendsDropdown">
                             <a class="dropdown-item" href="{{ url_for('user.connect_friends') }}">Connect with Friends</a>
-                            <a class="dropdown-item" href="{{ url_for('user.share_recipes') }}">Share Recipes</a>
+                            <a class="dropdown-item" href="{{ url_for('user.share_post') }}">Share Post</a>
+                            <a class="dropdown-item" href="{{ url_for('user.view_posts') }}">View Posts</a>
                         </div>
                     </li>
+    
+                    <!-- Dropdown menu for notifications -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user.notifications') }}">Notifications</a>
+                    </li>
+    
+                    <!-- Dropdown menu for shopping list -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="shoppingListDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Shopping List
@@ -52,6 +65,7 @@
                             <a class="dropdown-item" href="{{ url_for('user.export_shopping_list') }}">Export Shopping List</a>
                         </div>
                     </li>
+    
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.achievements') }}">Achievements</a>
                     </li>
@@ -61,14 +75,17 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.automatic_conversion') }}">Automatic Recipe Conversion</a>
                     </li>
+    
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>
                     </li>
+    
                     {% if current_user.role == 'admin' %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
                         </li>
                     {% endif %}
+    
                 {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.login') }}">Login</a>
@@ -81,18 +98,22 @@
         </div>
     </nav>
     
+    
+    <!-- Main content area -->
     <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% with messages = get_flashed_messages(with_categories=true) %}  {# Get any flash messages with their categories #}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    <div class="alert alert-{{ category }}">{{ message }}</div>  {# Display each flash message with Bootstrap styling #}
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        {% block content %}{% endblock %}
+        {% block content %}{% endblock %}  {# Placeholder for page-specific content to be inserted #}
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript files for Bootstrap functionality -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>  {# jQuery library for Bootstrap #}
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>  {# Popper.js for Bootstrap dropdowns and tooltips #}
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  {# Bootstrap JavaScript for interactive components #}
 </body>
 </html>

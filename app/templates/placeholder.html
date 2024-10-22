@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {# Inherit from the base template to maintain consistent layout and styles #}
 
-{% block title %}{{ feature }}{% endblock %}
+{% block title %}{{ feature }}{% endblock %}  {# Set the page title dynamically based on the "feature" variable provided by the view #}
 
-{% block content %}
-<div class="alert alert-info" role="alert">
-    <h4 class="alert-heading">{{ feature }}</h4>
-    <p>This feature is not yet implemented. Stay tuned!</p>
+{% block content %}  {# Define the content block to insert specific content for the feature placeholder page #}
+<div class="alert alert-info" role="alert">  {# Bootstrap alert to inform users that this feature is not yet implemented #}
+    <h4 class="alert-heading">{{ feature }}</h4>  {# Display the feature name as the heading of the alert #}
+    <p>This feature is not yet implemented. Stay tuned!</p>  {# Informative message to let users know that the feature is a work in progress #}
 </div>
-{% endblock %}
+{% endblock %}  {# End of the content block #}

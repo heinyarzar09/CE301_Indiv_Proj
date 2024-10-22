@@ -1,10 +1,10 @@
-{% extends "admin_base.html" %}
+{% extends "admin_base.html" %}  {# Inherit from the admin base template to maintain consistent structure and styles for admin pages #}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Dashboard{% endblock %}  {# Set the page title to "Admin Dashboard" for display in the browser tab #}
 
-{% block content %}
-<div class="container text-center">
-    <h1>Welcome to the Admin Dashboard</h1>
-<p>Here you can manage users, recipes, and site settings.</p>
+{% block content %}  {# Define the content block to insert specific content for the Admin Dashboard page #}
+<div class="container text-center">  {# Use Bootstrap's container class for layout and text-center to center-align the content #}
+    <h1>Welcome to the Admin Dashboard</h1>  {# Page heading to welcome the admin to the dashboard #}
+    <p>Here you can manage users, recipes, and site settings.</p>  {# Brief description of the actions the admin can take #}
 </div>
-{% endblock %}
+{% endblock %}  {# End of the content block #}
