@@ -9,33 +9,17 @@
     {% for user in users %}
         <li class="list-group-item">
             {{ user.username }}
-            {% if user.id != current_user.id %}
-                <!-- Check if the current user has already sent or received a request from this user -->
-                {% set friend_request = user.friendships|selectattr('user_id', 'equalto', current_user.id)|first %}
-                {% set incoming_request = user.friendships|selectattr('friend_id', 'equalto', current_user.id)|first %}
+            {% if user.id != current_user.id and user.role != 'admin' %}
+                {% set friend_request = user.friendships|selectattr('friend_id', 'equalto', current_user.id)|first %}
                 
-                <!-- Show 'Accept Request' if there's an incoming request -->
-                {% if incoming_request and incoming_request.status == 'pending' %}
-                    <form action="{{ url_for('user.approve_friend_request', request_id=incoming_request.id) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-success btn-sm">Accept Request</button>
-                    </form>
-                    <form action="{{ url_for('user.reject_friend_request', request_id=incoming_request.id) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                    </form>
-                
-                <!-- Show 'Request Sent' if the current user has sent a request -->
-                {% elif friend_request and friend_request.status == 'pending' %}
-                    <span class="badge bg-warning">Request Sent</span>
-                
-                <!-- Show 'Friend' if the friendship has been accepted -->
-                {% elif friend_request and friend_request.status == 'accepted' %}
-                    <span class="badge bg-success">Friend</span>
-                
-                <!-- Otherwise show the 'Send Request' button -->
-                {% else %}
+                {% if friend_request and friend_request.status == 'pending' %}
+                    <span class="badge badge-secondary">Request Sent</span>  <!-- Greyed out button -->
+                {% elif not friend_request and not (user in friends) %}
                     <form action="{{ url_for('user.send_friend_request', friend_id=user.id) }}" method="POST" class="d-inline">
                         <button type="submit" class="btn btn-primary btn-sm">Send Request</button>
                     </form>
+                {% elif user in friends %}
+                    <span class="badge badge-success">Friend</span>  <!-- Already friends -->
                 {% endif %}
             {% endif %}
         </li>

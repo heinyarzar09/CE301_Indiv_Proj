@@ -296,11 +296,35 @@ def increment_achievement(achievement_id):
 @user.route('/connect_friends', methods=['GET', 'POST'])
 @login_required
 def connect_friends():
-    users = get_all_users_except_current(current_user)  # Get all users except the current user
-    friends = get_friends_for_user(current_user)  # Get current user's friends
-    added_friend = request.args.get('added_friend')
+    # Exclude current user and admins from the users list
+    # Exclude users with pending/accepted friend requests and received requests
+    pending_or_accepted = db.session.query(Friendship.friend_id).filter(
+        (Friendship.user_id == current_user.id) & (Friendship.status.in_(['pending', 'accepted']))
+    ).subquery()
+
+    received_requests = db.session.query(Friendship.user_id).filter(
+        (Friendship.friend_id == current_user.id) & (Friendship.status == 'pending')
+    ).subquery()
+
+    users = User.query.filter(
+        User.id != current_user.id, 
+        User.role != 'admin',
+        ~User.id.in_(pending_or_accepted),
+        ~User.id.in_(received_requests)
+    ).all()
+
+    # Get current user's friends (both directions)
+    friends = User.query.join(Friendship, ((Friendship.user_id == current_user.id) & (Friendship.friend_id == User.id)) |
+                                          ((Friendship.friend_id == current_user.id) & (Friendship.user_id == User.id)))\
+                        .filter(Friendship.status == 'accepted').all()
+
+    added_friend = request.args.get('added_friend')  # Get the friend added, if any
     
     return render_template('connect_friends.html', users=users, friends=friends, added_friend=added_friend)
+
+
+
+
 
 @user.route('/add_friend/<int:friend_id>', methods=['POST'])
 @login_required
@@ -398,7 +422,8 @@ def approve_friend_request(request_id):
         request.status = 'accepted'
         db.session.commit()
         flash(f'You are now friends with {request.user.username}!', 'success')
-    return redirect(url_for('user.notifications'))  # Redirect to notifications page
+    return redirect(url_for('user.notifications'))
+
 
 
 @user.route('/reject_friend_request/<int:request_id>', methods=['POST'])
