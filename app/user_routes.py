@@ -296,31 +296,41 @@ def increment_achievement(achievement_id):
 @user.route('/connect_friends', methods=['GET', 'POST'])
 @login_required
 def connect_friends():
-    # Exclude current user and admins from the users list
-    # Exclude users with pending/accepted friend requests and received requests
+    # Subquery to get users who have a pending or accepted friend request from or to the current user
     pending_or_accepted = db.session.query(Friendship.friend_id).filter(
         (Friendship.user_id == current_user.id) & (Friendship.status.in_(['pending', 'accepted']))
+    ).union(
+        db.session.query(Friendship.user_id).filter(
+            (Friendship.friend_id == current_user.id) & (Friendship.status.in_(['pending', 'accepted']))
+        )
     ).subquery()
 
-    received_requests = db.session.query(Friendship.user_id).filter(
-        (Friendship.friend_id == current_user.id) & (Friendship.status == 'pending')
+    # Subquery to get users who have blocked the current user or have been blocked by the current user
+    blocked_users = db.session.query(Friendship.friend_id).filter(
+        (Friendship.user_id == current_user.id) & (Friendship.is_blocked == True)
+    ).union(
+        db.session.query(Friendship.user_id).filter(
+            (Friendship.friend_id == current_user.id) & (Friendship.is_blocked == True)
+        )
     ).subquery()
 
+    # Exclude users who are already friends, have a pending request, or are blocked
     users = User.query.filter(
         User.id != current_user.id, 
         User.role != 'admin',
-        ~User.id.in_(pending_or_accepted),
-        ~User.id.in_(received_requests)
+        ~User.id.in_(pending_or_accepted),  # Exclude users with pending/accepted requests
+        ~User.id.in_(blocked_users)        # Exclude blocked users
     ).all()
 
     # Get current user's friends (both directions)
     friends = User.query.join(Friendship, ((Friendship.user_id == current_user.id) & (Friendship.friend_id == User.id)) |
                                           ((Friendship.friend_id == current_user.id) & (Friendship.user_id == User.id)))\
-                        .filter(Friendship.status == 'accepted').all()
+                        .filter(Friendship.status == 'accepted', Friendship.is_blocked == False).all()
 
     added_friend = request.args.get('added_friend')  # Get the friend added, if any
-    
+
     return render_template('connect_friends.html', users=users, friends=friends, added_friend=added_friend)
+
 
 
 
@@ -445,7 +455,7 @@ def send_friend_request(friend_id):
     friend = User.query.get(friend_id)
     if not friend:
         flash('User not found.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user.connect_friends'))
     
     # Check if friendship already exists
     existing_request = Friendship.query.filter_by(user_id=current_user.id, friend_id=friend_id).first()
@@ -453,15 +463,96 @@ def send_friend_request(friend_id):
     if existing_request:
         flash('Friend request already sent.', 'info')
     else:
-        # Set the status to 'pending' to match the logic used in notifications
+        # Set the status to 'pending'
         new_request = Friendship(user_id=current_user.id, friend_id=friend_id, status='pending')
         db.session.add(new_request)
         db.session.commit()
         flash(f'Friend request sent to {friend.username}!', 'success')
-    
-    return redirect(url_for('user.index'))
 
+    return redirect(url_for('user.connect_friends'))  # Redirect back to Connect with Friends
+
+
+@user.route('/unfollow_friend/<int:friend_id>', methods=['POST'])
+@login_required
+def unfollow_friend(friend_id):
+    # Find the friendship entry between the current user and the friend
+    friendship = Friendship.query.filter(
+        ((Friendship.user_id == current_user.id) & (Friendship.friend_id == friend_id)) |
+        ((Friendship.friend_id == current_user.id) & (Friendship.user_id == friend_id))
+    ).first()
     
+    if friendship:
+        db.session.delete(friendship)  # Fully delete the friendship
+        db.session.commit()
+        flash('You have unfollowed this user. You can send a new friend request.', 'success')
+    else:
+        flash('Friendship not found.', 'danger')
+
+    return redirect(url_for('user.connect_friends'))
+
+
+
+
+
+@user.route('/block_friend/<int:friend_id>', methods=['POST'])
+@login_required
+def block_friend(friend_id):
+    # Find the friendship entry between the current user and the friend
+    friendship = Friendship.query.filter(
+        ((Friendship.user_id == current_user.id) & (Friendship.friend_id == friend_id)) |
+        ((Friendship.friend_id == current_user.id) & (Friendship.user_id == friend_id))
+    ).first()
+
+    if friendship:
+        # Delete the friendship since it's a one-sided block
+        db.session.delete(friendship)
+        db.session.commit()
+
+        # Create a new friendship record to track the block status
+        new_block = Friendship(user_id=current_user.id, friend_id=friend_id, is_blocked=True, status='blocked')
+        db.session.add(new_block)
+        db.session.commit()
+        flash('You have blocked this user.', 'success')
+    else:
+        flash('Friendship not found.', 'danger')
+
+    return redirect(url_for('user.manage_friends'))
+
+
+@user.route('/unblock_friend/<int:friend_id>', methods=['POST'])
+@login_required
+def unblock_friend(friend_id):
+    # Find the block entry
+    block_entry = Friendship.query.filter_by(user_id=current_user.id, friend_id=friend_id, is_blocked=True).first()
+
+    if block_entry:
+        # Remove the block
+        db.session.delete(block_entry)
+        db.session.commit()
+        flash('You have unblocked this user. You can now send friend requests again.', 'success')
+    else:
+        flash('Block entry not found.', 'danger')
+
+    return redirect(url_for('user.manage_friends'))
+
+
+
+@user.route('/manage_friends', methods=['GET'])
+@login_required
+def manage_friends():
+    # Get current user's friends, excluding blocked users
+    friends = User.query.join(Friendship, ((Friendship.user_id == current_user.id) & (Friendship.friend_id == User.id)) |
+                                          ((Friendship.friend_id == current_user.id) & (Friendship.user_id == User.id)))\
+                        .filter(Friendship.status == 'accepted', Friendship.is_blocked == False).all()
+
+    # Get current user's blocked friends
+    blocked_friends = User.query.join(Friendship, (Friendship.friend_id == User.id))\
+                        .filter(Friendship.user_id == current_user.id, Friendship.is_blocked == True).all()
+
+    return render_template('manage_friends.html', friends=friends, blocked_friends=blocked_friends)
+
+
+
 # Placeholder routes for future features
 @user.route('/add_recipe')
 @login_required

@@ -76,10 +76,15 @@ class Friendship(db.Model):
     friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     status = db.Column(db.String(20), default='pending')
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())  # Date when the friendship was created
-
+    
+    # Add fields for block/unfollow functionality
+    is_blocked = db.Column(db.Boolean, default=False)  # To track if a user has blocked the other
+    is_unfollowed = db.Column(db.Boolean, default=False)  # To track if the user has unfollowed the other
+    
     # Relationships to the User model for both users involved in the friendship
     user = db.relationship('User', foreign_keys=[user_id], backref='friendships')
     friend = db.relationship('User', foreign_keys=[friend_id], backref='friends')
     # 'foreign_keys' specifies which foreign key is used for each relationship
     # 'backref' provides convenient access to friendship records and friends from the User model
+
 

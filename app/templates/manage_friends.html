@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Friends{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Manage Friends</h2>
+
+    <!-- Display friends list -->
+    <h3>Your Friends</h3>
+    <ul class="list-group">
+        {% for friend in friends %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ friend.username }}
+            <div>
+                <!-- Unfollow Button -->
+                <form action="{{ url_for('user.unfollow_friend', friend_id=friend.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-warning btn-sm">Unfollow</button>
+                </form>
+                
+                <!-- Block Button -->
+                <form action="{{ url_for('user.block_friend', friend_id=friend.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm">Block</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Display blocked friends list -->
+    <h3 class="mt-4">Blocked Friends</h3>
+    <ul class="list-group">
+        {% for blocked_friend in blocked_friends %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ blocked_friend.username }}
+            <div>
+                <!-- Unblock Button -->
+                <form action="{{ url_for('user.unblock_friend', friend_id=blocked_friend.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-success btn-sm">Unblock</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
