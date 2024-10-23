@@ -1,6 +1,7 @@
 # Import necessary modules from Flask and other libraries
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort, current_app
 from flask_login import login_user, current_user, logout_user, login_required
+from PIL import Image
 from app import db, bcrypt
 from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm
 from app.models import User, Tool, Achievement, UserAchievement, Friendship, Post, Challenge, ChallengeParticipant
@@ -10,7 +11,7 @@ from app.achievements import check_achievements
 from datetime import datetime, timedelta, timezone
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
-import os
+import os, secrets
 
 # Create a blueprint for user-related routes
 user = Blueprint('user', __name__)
@@ -562,10 +563,13 @@ def create_challenge():
         
         # Handle file upload for the challenge icon
         if form.icon.data:
-            icon_filename = secure_filename(form.icon.data.filename)
-            form.icon.data.save(os.path.join('static/images/challenges', icon_filename))
+            icon_filename = save_image(form.icon.data)
         else:
-            icon_filename = None
+            icon_filename = 'default_icon.png'  # Provide a default icon if no image is uploaded
+
+        # Create the date the challenge ends
+        date_created = datetime.now(timezone.utc)
+        date_end = date_created + duration
 
         # Create a new challenge
         challenge = Challenge(
@@ -573,7 +577,9 @@ def create_challenge():
             icon=icon_filename,
             creator_id=current_user.id,
             credits_required=form.credits_required.data,
-            duration=duration
+            duration=duration,
+            date_created=date_created,
+            date_end=date_end  # Set the calculated date_end here
         )
 
         # Add the challenge to the database
@@ -586,37 +592,60 @@ def create_challenge():
     return render_template('create_challenge.html', form=form)
 
 
+
+# Function to save images (like post images or challenge icons)
+def save_image(form_image):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_image.filename)
+    image_filename = random_hex + f_ext
+    image_path = os.path.join(current_app.root_path, 'static/challenges', image_filename)
+
+    # Resize the image or process it as needed
+    output_size = (200, 200)
+    img = Image.open(form_image)
+    img.thumbnail(output_size)
+    img.save(image_path)
+
+    return image_filename
+
+
 @user.route('/join_challenge/<int:challenge_id>', methods=['POST'])
 @login_required
 def join_challenge(challenge_id):
+    form = JoinChallengeForm()
     challenge = Challenge.query.get_or_404(challenge_id)
 
-    if challenge.is_active and current_user.credits >= challenge.credits_required:
-        participant = ChallengeParticipant(
-            user_id=current_user.id,
-            challenge_id=challenge_id,
-            wagered_credits=challenge.credits_required
-        )
-        db.session.add(participant)
-        db.session.commit()
+    # Check if the user has enough credits to join the challenge
+    if current_user.credits < challenge.credits_required:
+        flash('You do not have enough credits to join this challenge.', 'danger')
+        return redirect(url_for('user.challenges'))  # Redirect to the challenges page
 
-        # Deduct credits from the user
-        current_user.credits -= challenge.credits_required
-        db.session.commit()
+    # Check if the user has already joined the challenge
+    existing_participation = ChallengeParticipant.query.filter_by(user_id=current_user.id, challenge_id=challenge_id).first()
+    if existing_participation:
+        flash('You have already joined this challenge.', 'info')
+        return redirect(url_for('user.challenges'))
 
-        flash(f'You have joined the challenge: {challenge.name}!', 'success')
-    else:
-        flash('You don’t have enough credits or the challenge has ended.', 'danger')
+    # Deduct the required credits and add the user to the challenge participants
+    current_user.credits -= challenge.credits_required
+    participant = ChallengeParticipant(user_id=current_user.id, challenge_id=challenge_id, wagered_credits=challenge.credits_required)
+    db.session.add(participant)
+    db.session.commit()
 
-    return redirect(url_for('user.challenges'))
+    flash(f'You have successfully joined the challenge: {challenge.name}!', 'success')
+    return redirect(url_for('user.leaderboard'))
+
 
 
 @user.route('/challenges')
 @login_required
 def challenges():
-    # Get all challenges
-    challenges = Challenge.query.all()
-    return render_template('challenges.html', challenges=challenges)
+    challenges = Challenge.query.all()  # Retrieve all challenges
+    remaining_credits = current_user.credits  # Get the current user's remaining credits
+    form = JoinChallengeForm()  # Include the form if needed for the challenge
+    return render_template('challenges.html', challenges=challenges, remaining_credits=remaining_credits, form=form)
+
+
 
 @user.route('/leaderboard')
 @login_required

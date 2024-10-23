@@ -1,4 +1,3 @@
-<!-- challenges.html -->
 {% extends "base.html" %}
 
 {% block title %}Challenges{% endblock %}
@@ -6,16 +5,27 @@
 {% block content %}
   <div class="container">
     <h1 class="mt-4">Challenges</h1>
+
+    <!-- Display the user's remaining credits -->
+    <div class="alert alert-info" role="alert">
+      You have {{ remaining_credits }} credits remaining.
+    </div>
+
     <div class="row">
       {% for challenge in challenges %}
         <div class="col-md-4">
           <div class="card mb-4">
-            <img src="{{ url_for('static', filename='images/challenges/icon.png') }}" alt="Challenge Icon">
+            <img src="{{ url_for('static', filename='challenges/' ~ challenge.icon) }}" alt="{{ challenge.name }}" class="card-img-top">
             <div class="card-body">
               <h5 class="card-title">{{ challenge.name }}</h5>
               <p class="card-text">Credits required: {{ challenge.credits_required }}</p>
               <p class="card-text">Duration: {{ challenge.duration }}</p>
-              <a href="{{ url_for('user.join_challenge', challenge_id=challenge.id) }}" class="btn btn-primary">Join Challenge</a>
+              
+              <form method="POST" action="{{ url_for('user.join_challenge', challenge_id=challenge.id) }}">
+                {{ form.hidden_tag() }}
+                <button type="submit" class="btn btn-primary">Join Challenge</button>
+              </form>
+
             </div>
           </div>
         </div>
