@@ -99,19 +99,27 @@ class Challenge(db.Model):
     __tablename__ = 'challenge'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    icon = db.Column(db.String(100))
+    icon = db.Column(db.String(100))  # Path to the icon
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     credits_required = db.Column(db.Integer, nullable=False)
-    duration = db.Column(db.Interval, nullable=False)
-    date_created = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    date_end = db.Column(db.DateTime, nullable=False)
+    duration = db.Column(db.Integer, nullable=False)  # Store duration in seconds
 
-    # Relationship to participants, using a unique backref name
-    participants = db.relationship('ChallengeParticipant', backref='challenge_participation', lazy=True, cascade="all, delete-orphan", overlaps="participants")
+    # Relationship to participants
+    participants = db.relationship('ChallengeParticipant', backref='challenge_participation', lazy=True, cascade="all, delete-orphan")
+
+    def __init__(self, name, icon, creator_id, credits_required, duration):
+        self.name = name
+        self.icon = icon
+        self.creator_id = creator_id
+        self.credits_required = credits_required
+        self.duration = duration
 
     @property
-    def is_active(self):
-        return datetime.now(timezone.utc) < self.date_end
+    def time_remaining(self):
+        # Use duration to calculate remaining time
+        return self.duration
+
+
 
 
 class ChallengeParticipant(db.Model):

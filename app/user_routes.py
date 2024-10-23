@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
 from app import db, bcrypt
-from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm
+from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm
 from app.models import User, Tool, Achievement, UserAchievement, Friendship, Post, Challenge, ChallengeParticipant
 from app.utils import convert_measurement, process_recipe, get_all_users_except_current, get_friends_for_user, get_incoming_friend_requests, get_outgoing_friend_requests, get_incoming_friend_requests, get_recent_follows
 from app.forms import AchievementTrackingForm, ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm, JoinChallengeForm
@@ -553,42 +553,35 @@ def manage_friends():
     return render_template('manage_friends.html', friends=friends, blocked_friends=blocked_friends)
 
 
+
 @user.route('/create_challenge', methods=['GET', 'POST'])
 @login_required
 def create_challenge():
     form = ChallengeForm()
     if form.validate_on_submit():
-        # Calculate the duration from the form input
-        duration = timedelta(days=form.days.data, hours=form.hours.data, minutes=form.minutes.data)
-        
-        # Handle file upload for the challenge icon
+        # Calculate duration in seconds
+        duration = (form.days.data * 86400) + (form.hours.data * 3600) + (form.minutes.data * 60) + form.seconds.data
+
+        # Handle file upload
         if form.icon.data:
             icon_filename = save_image(form.icon.data)
         else:
-            icon_filename = 'default_icon.png'  # Provide a default icon if no image is uploaded
+            icon_filename = 'default_icon.png'
 
-        # Create the date the challenge ends
-        date_created = datetime.now(timezone.utc)
-        date_end = date_created + duration
-
-        # Create a new challenge
+        # Create new challenge
         challenge = Challenge(
             name=form.name.data,
             icon=icon_filename,
             creator_id=current_user.id,
             credits_required=form.credits_required.data,
-            duration=duration,
-            date_created=date_created,
-            date_end=date_end  # Set the calculated date_end here
+            duration=duration
         )
-
-        # Add the challenge to the database
+        
         db.session.add(challenge)
         db.session.commit()
-        
-        flash(f'Challenge "{form.name.data}" created successfully!', 'success')
+        flash('Challenge created successfully!', 'success')
         return redirect(url_for('user.challenges'))
-
+    
     return render_template('create_challenge.html', form=form)
 
 
@@ -636,14 +629,22 @@ def join_challenge(challenge_id):
     return redirect(url_for('user.leaderboard'))
 
 
-
-@user.route('/challenges')
+@user.route('/challenges', methods=['GET'])
 @login_required
 def challenges():
-    challenges = Challenge.query.all()  # Retrieve all challenges
-    remaining_credits = current_user.credits  # Get the current user's remaining credits
-    form = JoinChallengeForm()  # Include the form if needed for the challenge
-    return render_template('challenges.html', challenges=challenges, remaining_credits=remaining_credits, form=form)
+    challenges = Challenge.query.all()  # Fetch all challenges from the database
+    remaining_credits = current_user.credits
+    joined_challenge_ids = [cp.challenge_id for cp in current_user.participated_challenges]
+
+    form = JoinChallengeForm()  # Add this line to create a form instance
+
+    return render_template('challenges.html',
+                           challenges=challenges,
+                           joined_challenge_ids=joined_challenge_ids,
+                           remaining_credits=remaining_credits,
+                           form=form)
+
+
 
 
 

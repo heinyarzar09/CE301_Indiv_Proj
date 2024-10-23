@@ -1,11 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Challenges{% endblock %}
-
 {% block content %}
   <div class="container">
     <h1 class="mt-4">Challenges</h1>
-
     <!-- Display the user's remaining credits -->
     <div class="alert alert-info" role="alert">
       You have {{ remaining_credits }} credits remaining.
@@ -19,17 +16,62 @@
             <div class="card-body">
               <h5 class="card-title">{{ challenge.name }}</h5>
               <p class="card-text">Credits required: {{ challenge.credits_required }}</p>
-              <p class="card-text">Duration: {{ challenge.duration }}</p>
-              
-              <form method="POST" action="{{ url_for('user.join_challenge', challenge_id=challenge.id) }}">
-                {{ form.hidden_tag() }}
-                <button type="submit" class="btn btn-primary">Join Challenge</button>
-              </form>
 
+              <!-- Countdown timer -->
+              <p class="card-text">
+                <strong>Ends in:</strong> 
+                <span class="countdown-timer" data-duration="{{ challenge.duration }}"></span>
+              </p>
+
+              <!-- Check if the user has already joined the challenge -->
+              {% if challenge.id in joined_challenge_ids %}
+                <button class="btn btn-success" disabled>Challenge Joined</button>
+              {% else %}
+                <form method="POST" action="{{ url_for('user.join_challenge', challenge_id=challenge.id) }}">
+                  {{ form.hidden_tag() }}
+                  <button type="submit" class="btn btn-primary">Join Challenge</button>
+                </form>
+              {% endif %}
             </div>
           </div>
         </div>
+      {% else %}
+        <p>No challenges available.</p>
       {% endfor %}
     </div>
   </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Function to start the countdown timer
+function startCountdown() {
+  const timers = document.querySelectorAll('.countdown-timer');
+
+  timers.forEach(timer => {
+    let duration = parseInt(timer.getAttribute('data-duration'));
+
+    function updateTimer() {
+      if (duration <= 0) {
+        timer.textContent = "Challenge Ended";
+        return;
+      }
+
+      const days = Math.floor(duration / (3600 * 24));
+      const hours = Math.floor((duration % (3600 * 24)) / 3600);
+      const minutes = Math.floor((duration % 3600) / 60);
+      const seconds = duration % 60;
+
+      timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      duration--;
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+  });
+}
+
+// Call startCountdown when the page loads
+document.addEventListener('DOMContentLoaded', startCountdown);
+</script>
 {% endblock %}

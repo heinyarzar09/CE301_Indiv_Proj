@@ -10,7 +10,13 @@
       {% for challenge in challenges %}
         <div class="col-md-12">
           <h3>{{ challenge.name }}</h3>
-          <p>End date: {{ challenge.date_end }}</p>
+
+          <!-- Countdown timer -->
+          <p class="card-text">
+            <strong>Ends in:</strong> 
+            <span class="countdown-timer" data-duration="{{ challenge.duration }}"></span>
+          </p>
+
           <div class="table-responsive">
             <table class="table">
               <thead>
@@ -36,3 +42,39 @@
     </div>
   </div>
 {% endblock %}
+
+
+{% block scripts %}
+<script>
+// Function to start the countdown timer
+function startCountdown() {
+  const timers = document.querySelectorAll('.countdown-timer');
+
+  timers.forEach(timer => {
+    let duration = parseInt(timer.getAttribute('data-duration'));
+
+    function updateTimer() {
+      if (duration <= 0) {
+        timer.textContent = "Challenge Ended";
+        return;
+      }
+
+      const days = Math.floor(duration / (3600 * 24));
+      const hours = Math.floor((duration % (3600 * 24)) / 3600);
+      const minutes = Math.floor((duration % 3600) / 60);
+      const seconds = duration % 60;
+
+      timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      duration--;
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+  });
+}
+
+// Call startCountdown when the page loads
+document.addEventListener('DOMContentLoaded', startCountdown);
+</script>
+{% endblock %}
+

@@ -1,4 +1,3 @@
-<!-- create_challenge.html -->
 {% extends "base.html" %}
 
 {% block title %}Create a Challenge{% endblock %}
@@ -6,42 +5,39 @@
 {% block content %}
   <div class="container">
     <h1 class="mt-4">Create a Challenge</h1>
-    <form method="POST" enctype="multipart/form-data" action="{{ url_for('user.create_challenge') }}">
-      {{ form.hidden_tag() }}
-      
-      <div class="form-group">
-        <label for="name">Challenge Name</label>
-        {{ form.name(class="form-control") }}
-      </div>
 
-      <div class="form-group">
-        <label for="icon">Challenge Icon</label>
-        {{ form.icon(class="form-control-file") }}
-      </div>
-
-      <div class="form-group">
-        <label for="credits_required">Credits Required</label>
-        {{ form.credits_required(class="form-control") }}
-      </div>
-
-      <div class="form-group">
-        <label for="duration">Duration (Days/Hours/Minutes)</label>
-        <div class="row">
-          <div class="col">
-            {{ form.days(class="form-control") }}
-          </div>
-          <div class="col">
-            {{ form.hours(class="form-control") }}
-          </div>
-          <div class="col">
-            {{ form.minutes(class="form-control") }}
-          </div>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.name.label }}
+            {{ form.name(class="form-control") }}
         </div>
-      </div>
-
-      <div class="form-group">
+        <div class="form-group">
+            {{ form.icon.label }}
+            {{ form.icon(class="form-control-file") }}
+        </div>
+        <div class="form-group">
+            {{ form.credits_required.label }}
+            {{ form.credits_required(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <label>Duration (Days, Hours, Minutes, Seconds)</label>
+            <div class="row">
+                <div class="col">
+                    {{ form.days(class="form-control") }}
+                </div>
+                <div class="col">
+                    {{ form.hours(class="form-control") }}
+                </div>
+                <div class="col">
+                    {{ form.minutes(class="form-control") }}
+                </div>
+                <div class="col">
+                    {{ form.seconds(class="form-control") }}
+                </div>
+            </div>
+        </div>
         <button type="submit" class="btn btn-primary">Create Challenge</button>
-      </div>
     </form>
   </div>
 {% endblock %}
