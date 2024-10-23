@@ -1,7 +1,7 @@
 # Import necessary modules from Flask-WTF and WTForms
 from flask_wtf import FlaskForm  # Base class for creating forms in Flask
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField, IntegerField  # Different types of form fields
-from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange  # Validators for form fields
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField, IntegerField, FileField  # Different types of form fields
+from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange, Optional  # Validators for form fields
 from app.models import User, Tool  # Import models for validation
 from flask_wtf.file import FileField, FileAllowed  # File fields for handling file uploads
 
@@ -146,3 +146,33 @@ class SharePostForm(FlaskForm):
     message = TextAreaField('Message', validators=[DataRequired()])
     # Submit button for the post sharing form
     submit = SubmitField('Share Post')
+
+class AddCreditsForm(FlaskForm):
+    credits = IntegerField('Credits to Add', validators=[DataRequired()])
+    submit = SubmitField('Add Credits')
+
+class ChallengeForm(FlaskForm):
+    name = StringField('Challenge Name', validators=[DataRequired(), Length(min=2, max=100)])
+    icon = FileField('Challenge Icon', validators=[FileAllowed(['jpg', 'png', 'gif']), DataRequired()])
+    credits_required = IntegerField('Credits Required', validators=[DataRequired()])
+    
+    # Optional fields for duration, defaulting to 0 if not provided
+    days = IntegerField('Days', validators=[Optional()], default=0)
+    hours = IntegerField('Hours', validators=[Optional()], default=0)
+    minutes = IntegerField('Minutes', validators=[Optional()], default=0)
+    
+    submit = SubmitField('Create Challenge')
+
+
+class JoinChallengeForm(FlaskForm):
+    submit = SubmitField('Join Challenge')
+
+class AdminAddCreditsForm(FlaskForm):
+    user = SelectField('User', coerce=int, validators=[DataRequired()])
+    credits_to_add = IntegerField('Credits to Add', validators=[DataRequired()])
+    submit = SubmitField('Add Credits')
+
+    def __init__(self, users, *args, **kwargs):
+        super(AdminAddCreditsForm, self).__init__(*args, **kwargs)
+        self.user.choices = [(user.id, user.username) for user in users]
+

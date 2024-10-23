@@ -67,6 +67,18 @@
                         </div>
                     </li>
     
+                    <!-- Dropdown for Challenges -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="challengesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Challenges
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="challengesDropdown">
+                          <a class="dropdown-item" href="{{ url_for('user.challenges') }}">View Challenges</a>
+                          <a class="dropdown-item" href="{{ url_for('user.leaderboard') }}">Leaderboard</a>
+                          <a class="dropdown-item" href="{{ url_for('user.create_challenge') }}">Create a Challenge</a> <!-- New Link for creating a challenge -->
+                        </div>
+                      </li>
+
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.achievements') }}">Achievements</a>
                     </li>

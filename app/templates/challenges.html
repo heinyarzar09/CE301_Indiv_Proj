@@ -1,0 +1,25 @@
+<!-- challenges.html -->
+{% extends "base.html" %}
+
+{% block title %}Challenges{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h1 class="mt-4">Challenges</h1>
+    <div class="row">
+      {% for challenge in challenges %}
+        <div class="col-md-4">
+          <div class="card mb-4">
+            <img src="{{ url_for('static', filename='images/challenges/icon.png') }}" alt="Challenge Icon">
+            <div class="card-body">
+              <h5 class="card-title">{{ challenge.name }}</h5>
+              <p class="card-text">Credits required: {{ challenge.credits_required }}</p>
+              <p class="card-text">Duration: {{ challenge.duration }}</p>
+              <a href="{{ url_for('user.join_challenge', challenge_id=challenge.id) }}" class="btn btn-primary">Join Challenge</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

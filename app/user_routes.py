@@ -3,11 +3,11 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db, bcrypt
 from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm
-from app.models import User, Tool, Achievement, UserAchievement, Friendship, Post
+from app.models import User, Tool, Achievement, UserAchievement, Friendship, Post, Challenge, ChallengeParticipant
 from app.utils import convert_measurement, process_recipe, get_all_users_except_current, get_friends_for_user, get_incoming_friend_requests, get_outgoing_friend_requests, get_incoming_friend_requests, get_recent_follows
-from app.forms import AchievementTrackingForm
+from app.forms import AchievementTrackingForm, ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm, JoinChallengeForm
 from app.achievements import check_achievements 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
 import os
@@ -551,6 +551,79 @@ def manage_friends():
 
     return render_template('manage_friends.html', friends=friends, blocked_friends=blocked_friends)
 
+
+@user.route('/create_challenge', methods=['GET', 'POST'])
+@login_required
+def create_challenge():
+    form = ChallengeForm()
+    if form.validate_on_submit():
+        # Calculate the duration from the form input
+        duration = timedelta(days=form.days.data, hours=form.hours.data, minutes=form.minutes.data)
+        
+        # Handle file upload for the challenge icon
+        if form.icon.data:
+            icon_filename = secure_filename(form.icon.data.filename)
+            form.icon.data.save(os.path.join('static/images/challenges', icon_filename))
+        else:
+            icon_filename = None
+
+        # Create a new challenge
+        challenge = Challenge(
+            name=form.name.data,
+            icon=icon_filename,
+            creator_id=current_user.id,
+            credits_required=form.credits_required.data,
+            duration=duration
+        )
+
+        # Add the challenge to the database
+        db.session.add(challenge)
+        db.session.commit()
+        
+        flash(f'Challenge "{form.name.data}" created successfully!', 'success')
+        return redirect(url_for('user.challenges'))
+
+    return render_template('create_challenge.html', form=form)
+
+
+@user.route('/join_challenge/<int:challenge_id>', methods=['POST'])
+@login_required
+def join_challenge(challenge_id):
+    challenge = Challenge.query.get_or_404(challenge_id)
+
+    if challenge.is_active and current_user.credits >= challenge.credits_required:
+        participant = ChallengeParticipant(
+            user_id=current_user.id,
+            challenge_id=challenge_id,
+            wagered_credits=challenge.credits_required
+        )
+        db.session.add(participant)
+        db.session.commit()
+
+        # Deduct credits from the user
+        current_user.credits -= challenge.credits_required
+        db.session.commit()
+
+        flash(f'You have joined the challenge: {challenge.name}!', 'success')
+    else:
+        flash('You don’t have enough credits or the challenge has ended.', 'danger')
+
+    return redirect(url_for('user.challenges'))
+
+
+@user.route('/challenges')
+@login_required
+def challenges():
+    # Get all challenges
+    challenges = Challenge.query.all()
+    return render_template('challenges.html', challenges=challenges)
+
+@user.route('/leaderboard')
+@login_required
+def leaderboard():
+    # Get all challenges with participants
+    challenges = Challenge.query.all()
+    return render_template('leaderboard.html', challenges=challenges)
 
 
 # Placeholder routes for future features

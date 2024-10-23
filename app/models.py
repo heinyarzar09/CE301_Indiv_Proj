@@ -1,31 +1,39 @@
 # Import necessary modules for creating database models
 from flask_login import UserMixin  # Provides default implementations for user authentication (like is_authenticated)
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from app import db  # Importing the SQLAlchemy instance for database interactions
 
 # Define the User model that extends from SQLAlchemy's Model and Flask-Login's UserMixin
 class User(db.Model, UserMixin):
     # Define columns for the User table
-    id = db.Column(db.Integer, primary_key=True)  # Unique ID for each user (primary key)
-    username = db.Column(db.String(20), unique=True, nullable=False)  # Username (must be unique)
-    email = db.Column(db.String(120), unique=True, nullable=False)  # Email (must be unique)
-    password = db.Column(db.String(60), nullable=False)  # Password (hashed for security)
-    role = db.Column(db.String(10), nullable=False, default='user')  # User role (default: user)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+    role = db.Column(db.String(10), nullable=False, default='user')
 
     # Tracking user activity metrics
-    completed_recipes = db.Column(db.Integer, default=0)  # Number of recipes the user has completed
-    recipes_created = db.Column(db.Integer, default=0)  # Number of recipes the user has created
-    recipes_shared = db.Column(db.Integer, default=0)  # Number of recipes the user has shared
-    friends_connected = db.Column(db.Integer, default=0)  # Number of friends connected
-    shopping_lists_created = db.Column(db.Integer, default=0)  # Number of shopping lists created
-    conversion_tool_uses = db.Column(db.Integer, default=0)  # Number of times the conversion tool was used
+    completed_recipes = db.Column(db.Integer, default=0)
+    recipes_created = db.Column(db.Integer, default=0)
+    recipes_shared = db.Column(db.Integer, default=0)
+    friends_connected = db.Column(db.Integer, default=0)
+    shopping_lists_created = db.Column(db.Integer, default=0)
+    conversion_tool_uses = db.Column(db.Integer, default=0)
 
-    posts = db.relationship('Post', backref='author', cascade="all, delete-orphan", lazy=True)
-    # Relationship to the Tool model
+    # Credits for creating/joining challenges
+    credits = db.Column(db.Integer, default=100)
+
+    # Relationship to tools, posts, and challenges
     tools = db.relationship('Tool', backref='owner', lazy=True, cascade="all, delete-orphan")
-    # 'backref' provides access to the 'owner' attribute from the Tool model
+    posts = db.relationship('Post', backref='author', lazy=True, cascade="all, delete-orphan")
+    
+    # Use a unique backref name for created challenges to avoid conflict
+    created_challenges = db.relationship('Challenge', backref='challenge_creator', lazy=True, overlaps="challenge_creator,challenges_created")
+    participated_challenges = db.relationship('ChallengeParticipant', backref='participant', lazy=True, overlaps="participant,challenges_participated")
+    # 'backref' provides access to the 'creator' attribute from the Challenge model
     # 'lazy=True' means that related objects are loaded when they are accessed
-    # 'cascade="all, delete-orphan"' ensures that tools are deleted if the user is deleted
+    # 'cascade="all, delete-orphan"' ensures that challenges are deleted if the user is deleted
+
 
 # Define the Tool model which stores information about users' tools
 class Tool(db.Model, UserMixin):
@@ -88,3 +96,42 @@ class Friendship(db.Model):
     # 'backref' provides convenient access to friendship records and friends from the User model
 
 
+class Challenge(db.Model):
+    __tablename__ = 'challenge'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    icon = db.Column(db.String(100))  # Path to the icon
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    credits_required = db.Column(db.Integer, nullable=False)
+    duration = db.Column(db.Interval, nullable=False)  # Use Interval for duration
+    date_created = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    date_end = db.Column(db.DateTime, nullable=False)  # Calculated based on duration
+
+    # Relationship to the user who created the challenge
+    creator = db.relationship('User', backref='challenges_created', overlaps="challenge_creator,challenges_created")
+
+    # Relationship to participants, using a unique backref name
+    participants = db.relationship('ChallengeParticipant', backref='challenge_participation', lazy=True, cascade="all, delete-orphan")
+
+    @property
+    def is_active(self):
+        return datetime.now(timezone.utc) < self.date_end
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.date_end = self.date_created + self.duration
+
+class ChallengeParticipant(db.Model):
+    __tablename__ = 'challenge_participant'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=False)
+    wagered_credits = db.Column(db.Integer, nullable=False)
+    progress = db.Column(db.Float, default=0)  # Progress for tracking in leaderboard
+    date_joined = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relationship to the user participating in the challenge
+    user = db.relationship('User', backref='participations', overlaps="participant,challenges_participated")
+
+    # Relationship to the challenge, using a unique backref
+    challenge = db.relationship('Challenge', backref='challenge_participants', overlaps="participants")

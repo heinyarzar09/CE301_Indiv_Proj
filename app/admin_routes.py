@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import current_user, login_required  # Flask-Login for managing user authentication
 from app import db, bcrypt  # Importing database instance and bcrypt for password hashing
-from app.forms import ResetPasswordForm  # Importing form for resetting passwords
+from app.forms import ResetPasswordForm, AdminAddCreditsForm  # Importing form for resetting passwords
 from app.models import User, Friendship  # Importing User model for managing user data
 
 # Create a blueprint for admin-related routes
@@ -108,5 +108,18 @@ def admin_delete_user(user_id):
     return redirect(url_for('admin.manage_users'))
 
 
+@admin.route('/add_credits/<int:user_id>', methods=['POST'])
+@login_required
+def add_credits(user_id):
+    user = User.query.get_or_404(user_id)
+    form = AdminAddCreditsForm()
+    
+    if form.validate_on_submit():
+        user.credits += form.credits.data
+        db.session.commit()
+        flash(f'{form.credits.data} credits added to {user.username}', 'success')
+        return redirect(url_for('admin.manage_users'))
+    
+    return render_template('add_credits.html', form=form, user=user)
 
 

@@ -1,0 +1,38 @@
+<!-- leaderboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Leaderboard{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <h1 class="mt-4">Leaderboard</h1>
+    <div class="row">
+      {% for challenge in challenges %}
+        <div class="col-md-12">
+          <h3>{{ challenge.name }}</h3>
+          <p>End date: {{ challenge.date_end }}</p>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Progress</th>
+                  <th>Wagered Credits</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for participant in challenge.participants %}
+                  <tr>
+                    <td>{{ participant.user.username }}</td>
+                    <td>{{ participant.progress }}%</td>
+                    <td>{{ participant.wagered_credits }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
