@@ -2,7 +2,7 @@
 from flask_wtf import FlaskForm  # Base class for creating forms in Flask
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField, IntegerField, FileField  # Different types of form fields
 from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange, Optional  # Validators for form fields
-from app.models import User, Tool  # Import models for validation
+from app.models import User, Tool, Challenge  # Import models for validation
 from flask_wtf.file import FileField, FileAllowed  # File fields for handling file uploads
 
 # Form for user registration
@@ -144,8 +144,15 @@ class SharePostForm(FlaskForm):
     image = FileField('Upload Image', validators=[DataRequired()])
     # Text area for writing a message to accompany the post
     message = TextAreaField('Message', validators=[DataRequired()])
+    # Dropdown to select the challenge associated with the post
+    challenge = SelectField('Tag a Challenge', coerce=int, validators=[DataRequired()])
     # Submit button for the post sharing form
     submit = SubmitField('Share Post')
+
+    def __init__(self, *args, **kwargs):
+        super(SharePostForm, self).__init__(*args, **kwargs)
+        # Populate the challenge dropdown with available challenges
+        self.challenge.choices = [(challenge.id, challenge.name) for challenge in Challenge.query.all()]
 
 class AddCreditsForm(FlaskForm):
     credits = IntegerField('Credits to Add', validators=[DataRequired()])

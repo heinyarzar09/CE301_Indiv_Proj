@@ -1,85 +1,28 @@
-{% extends "base.html" %}  {# Inherit from the base template to maintain consistent structure and styles #}
+{% extends "base.html" %}
 
-{% block content %}  {# Define the content block to insert specific content for the user's achievements page #}
+{% block title %}My Achievements{% endblock %}
 
-<h2>Your Achievements</h2>  {# Page heading to indicate the achievements section #}
+{% block content %}
+  <div class="container">
+    <h1 class="mt-4">My Achievements</h1>
 
-<!-- Calculate percentages for progress bars -->
-{% set completed_recipes_percentage = (user.completed_recipes / 20) * 100 %}
-{% set recipes_created_percentage = (user.recipes_created / 10) * 100 %}
-{% set recipes_shared_percentage = (user.recipes_shared / 5) * 100 %}
-
-<!-- Display progress for achievements -->
-<div>
-    <!-- Completed Recipes Achievement -->
-    <p>Completed Recipes: {{ user.completed_recipes }}
-        <form action="{{ url_for('user.increment_achievement', achievement_id=1) }}" method="POST">  
-            <button type="submit" class="btn btn-primary">Increment</button>  {# Button to increment completed recipes count #}
-        </form>
-    </p>
-    <div class="progress">
-        <div class="progress-bar" role="progressbar" 
-             style="width: {{ completed_recipes_percentage }}%;" 
-             aria-valuenow="{{ user.completed_recipes }}" 
-             aria-valuemin="0" 
-             aria-valuemax="20">
-             {{ user.completed_recipes }}/20  {# Display progress percentage and count #}
-        </div>
-    </div>
-
-    <!-- Recipes Created Achievement -->
-    <p>Recipes Created: {{ user.recipes_created }}
-        <form action="{{ url_for('user.increment_achievement', achievement_id=2) }}" method="POST">  
-            <button type="submit" class="btn btn-primary">Increment</button>  {# Button to increment recipes created count #}
-        </form>
-    </p>
-    <div class="progress">
-        <div class="progress-bar" role="progressbar" 
-             style="width: {{ recipes_created_percentage }}%;" 
-             aria-valuenow="{{ user.recipes_created }}" 
-             aria-valuemin="0" 
-             aria-valuemax="10">
-             {{ user.recipes_created }}/10  {# Display progress percentage and count #}
-        </div>
-    </div>
-
-    <!-- Recipes Shared Achievement -->
-    <p>Recipes Shared: {{ user.recipes_shared }}
-        <form action="{{ url_for('user.increment_achievement', achievement_id=3) }}" method="POST">  
-            <button type="submit" class="btn btn-primary">Increment</button>  {# Button to increment recipes shared count #}
-        </form>
-    </p>
-    <div class="progress">
-        <div class="progress-bar" role="progressbar" 
-             style="width: {{ recipes_shared_percentage }}%;" 
-             aria-valuenow="{{ user.recipes_shared }}" 
-             aria-valuemin="0" 
-             aria-valuemax="5">
-             {{ user.recipes_shared }}/5  {# Display progress percentage and count #}
-        </div>
-    </div>
-</div>
-
-<!-- Display earned achievements -->
-<h3>Earned Achievements</h3>
-<ul style="list-style-type: none; padding-left: 0;">  {# Remove bullet points and padding for a cleaner list #}
-    {% for user_achievement in achievements %}  {# Loop through all achievements earned by the user #}
-        <li>
-            <!-- Display earned achievements based on progress -->
-            {% if user.completed_recipes >= 20 and user_achievement.achievement.name == 'Complete 20 Recipes' %}
-                <img src="{{ url_for('static', filename='images/create_10_recipes.png') }}" style="width: 50px; height: 50px;"> 
-                {{ user_achievement.achievement.name }} - Earned on {{ user_achievement.date_achieved }}
-            {% elif user.recipes_created >= 10 and user_achievement.achievement.name == 'Create 10 Recipes' %}
-                <img src="{{ url_for('static', filename='images/create_10_recipes.png') }}" style="width: 50px; height: 50px;"> 
-                {{ user_achievement.achievement.name }} - Earned on {{ user_achievement.date_achieved }}
-            {% elif user.recipes_shared >= 5 and user_achievement.achievement.name == 'Share 5 Recipes' %}
-                <img src="{{ url_for('static', filename='images/share_5_recipes.png') }}" style="width: 50px; height: 50px;"> 
-                {{ user_achievement.achievement.name }} - Earned on {{ user_achievement.date_achieved }}
-            {% endif %}
-        </li>
-    {% else %}  {# If no achievements have been earned #}
-        <li>You haven't earned any achievements yet. Keep cooking!</li>
-    {% endfor %}
-</ul>
-
-{% endblock %}  {# End of the content block #}
+    {% if achievements %}
+      <div class="row">
+        {% for achievement in achievements %}
+          <div class="col-md-4">
+            <div class="card mb-4">
+              <div class="card-body">
+                <h5 class="card-title">{{ achievement.challenge_name }}</h5>
+                <p class="card-text">Credits Won: {{ achievement.credits_won }}</p>
+                <p class="card-text">Duration: {{ achievement.challenge_duration }} seconds</p>
+                <p class="card-text">Participants: {{ achievement.participants }}</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>You have no achievements yet.</p>
+    {% endif %}
+  </div>
+{% endblock %}

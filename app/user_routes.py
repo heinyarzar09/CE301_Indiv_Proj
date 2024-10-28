@@ -4,10 +4,9 @@ from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
 from app import db, bcrypt
 from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm
-from app.models import User, Tool, Achievement, UserAchievement, Friendship, Post, Challenge, ChallengeParticipant
+from app.models import User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant
 from app.utils import convert_measurement, process_recipe, get_all_users_except_current, get_friends_for_user, get_incoming_friend_requests, get_outgoing_friend_requests, get_incoming_friend_requests, get_recent_follows
-from app.forms import AchievementTrackingForm, ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm, JoinChallengeForm
-from app.achievements import check_achievements 
+from app.forms import AchievementTrackingForm, ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm, JoinChallengeForm 
 from datetime import datetime, timedelta, timezone
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
@@ -159,140 +158,140 @@ def delete_tool(tool_id):
     flash('Tool has been deleted.', 'success')
     return redirect(url_for('user.my_tools'))
 
-# Route to complete a recipe
-@user.route('/complete_recipe/<int:recipe_id>', methods=['POST'])
-@login_required
-def complete_recipe(recipe_id):
-    # Logic to handle recipe completion (omitted for now)
+# # Route to complete a recipe
+# @user.route('/complete_recipe/<int:recipe_id>', methods=['POST'])
+# @login_required
+# def complete_recipe(recipe_id):
+#     # Logic to handle recipe completion (omitted for now)
     
-    # Update the user's completed recipes count
-    current_user.completed_recipes += 1
-    db.session.commit()
+#     # Update the user's completed recipes count
+#     current_user.completed_recipes += 1
+#     db.session.commit()
     
-    # Check for and award any applicable achievements
-    check_achievements(current_user)
+#     # Check for and award any applicable achievements
+#     check_achievements(current_user)
     
-    flash("Recipe completed!", "success")
-    return redirect(url_for('user.my_tools'))
+#     flash("Recipe completed!", "success")
+#     return redirect(url_for('user.my_tools'))
 
-# Function to check for achievements based on user's progress
-def check_achievements(user):
-    achievements = Achievement.query.all()
-    # Iterate through available achievements and check if user qualifies
-    for achievement in achievements:
-        if achievement.criteria == 'Complete 20 Recipes' and user.completed_recipes >= 20:
-            if not UserAchievement.query.filter_by(user_id=user.id, achievement_id=achievement.id).first():
-                new_achievement = UserAchievement(user_id=user.id, achievement_id=achievement.id, date_achieved=datetime.utcnow())
-                db.session.add(new_achievement)
-                db.session.commit()
+# # Function to check for achievements based on user's progress
+# def check_achievements(user):
+#     achievements = Achievement.query.all()
+#     # Iterate through available achievements and check if user qualifies
+#     for achievement in achievements:
+#         if achievement.criteria == 'Complete 20 Recipes' and user.completed_recipes >= 20:
+#             if not UserAchievement.query.filter_by(user_id=user.id, achievement_id=achievement.id).first():
+#                 new_achievement = UserAchievement(user_id=user.id, achievement_id=achievement.id, date_achieved=datetime.utcnow())
+#                 db.session.add(new_achievement)
+#                 db.session.commit()
 
-    # Check and award various achievements based on the user's progress
-    if user.completed_recipes >= 1:
-        award_achievement(user, 'First Recipe Completed')
-    if user.completed_recipes >= 10:
-        award_achievement(user, 'Master Chef')
-    if user.recipes_created >= 1:
-        award_achievement(user, 'Recipe Creator')
-    if user.recipes_shared >= 1:
-        award_achievement(user, 'Social Butterfly')
-    if user.shopping_lists_created >= 3:
-        award_achievement(user, 'Shopping Expert')
-    if user.conversion_tool_uses >= 5:
-        award_achievement(user, 'Conversion Master')
+#     # Check and award various achievements based on the user's progress
+#     if user.completed_recipes >= 1:
+#         award_achievement(user, 'First Recipe Completed')
+#     if user.completed_recipes >= 10:
+#         award_achievement(user, 'Master Chef')
+#     if user.recipes_created >= 1:
+#         award_achievement(user, 'Recipe Creator')
+#     if user.recipes_shared >= 1:
+#         award_achievement(user, 'Social Butterfly')
+#     if user.shopping_lists_created >= 3:
+#         award_achievement(user, 'Shopping Expert')
+#     if user.conversion_tool_uses >= 5:
+#         award_achievement(user, 'Conversion Master')
 
-# Function to award a specific achievement to a user
-def award_achievement(user, achievement_name):
-    achievement = Achievement.query.filter_by(name=achievement_name).first()
-    if achievement:
-        # Ensure the user hasn't already earned the achievement
-        if not UserAchievement.query.filter_by(user_id=user.id, achievement_id=achievement.id).first():
-            user_achievement = UserAchievement(user_id=user.id, achievement_id=achievement.id)
-            db.session.add(user_achievement)
-            db.session.commit()
-            flash(f"Congratulations! You've earned the '{achievement_name}' achievement.", 'success')
+# # Function to award a specific achievement to a user
+# def award_achievement(user, achievement_name):
+#     achievement = Achievement.query.filter_by(name=achievement_name).first()
+#     if achievement:
+#         # Ensure the user hasn't already earned the achievement
+#         if not UserAchievement.query.filter_by(user_id=user.id, achievement_id=achievement.id).first():
+#             user_achievement = UserAchievement(user_id=user.id, achievement_id=achievement.id)
+#             db.session.add(user_achievement)
+#             db.session.commit()
+#             flash(f"Congratulations! You've earned the '{achievement_name}' achievement.", 'success')
 
-# Function to add icons to achievements
-def add_icons_to_achievements(app):
-    with app.app_context():
-        achievements = Achievement.query.all()
-        for achievement in achievements:
-            if achievement.name == 'Complete 20 Recipes':
-                achievement.icon_url = '/static/icons/completed_20_recipes.png'
-            elif achievement.name == 'Create 10 Recipes':
-                achievement.icon_url = '/static/icons/create_10_recipes.png'
-            # Add more conditions for other achievements here
-            db.session.commit()
+# # Function to add icons to achievements
+# def add_icons_to_achievements(app):
+#     with app.app_context():
+#         achievements = Achievement.query.all()
+#         for achievement in achievements:
+#             if achievement.name == 'Complete 20 Recipes':
+#                 achievement.icon_url = '/static/icons/completed_20_recipes.png'
+#             elif achievement.name == 'Create 10 Recipes':
+#                 achievement.icon_url = '/static/icons/create_10_recipes.png'
+#             # Add more conditions for other achievements here
+#             db.session.commit()
 
-@user.route('/manage_achievements')
-@login_required
-def manage_achievements():
-    if current_user.role != 'admin':
-        abort(403)
-    add_icons_to_achievements()
-    flash("Achievements icons updated successfully.", "success")
-    return redirect(url_for('user.index'))
+# @user.route('/manage_achievements')
+# @login_required
+# def manage_achievements():
+#     if current_user.role != 'admin':
+#         abort(403)
+#     add_icons_to_achievements()
+#     flash("Achievements icons updated successfully.", "success")
+#     return redirect(url_for('user.index'))
 
-@user.route('/track_achievement', methods=['POST'])
-@login_required
-def track_achievement():
-    form = AchievementTrackingForm()
-    if form.validate_on_submit():
-        # Assuming you have a UserAchievement model and criteria to check against
-        achievement_name = form.achievement_name.data
-        progress = form.progress.data
+# @user.route('/track_achievement', methods=['POST'])
+# @login_required
+# def track_achievement():
+#     form = AchievementTrackingForm()
+#     if form.validate_on_submit():
+#         # Assuming you have a UserAchievement model and criteria to check against
+#         achievement_name = form.achievement_name.data
+#         progress = form.progress.data
 
-        # Here you can add logic to update or track the user's achievement progress
-        # For example, update an existing UserAchievement or create a new one
+#         # Here you can add logic to update or track the user's achievement progress
+#         # For example, update an existing UserAchievement or create a new one
 
-        flash(f"Your progress for {achievement_name} has been updated to {progress}!", "success")
-        return redirect(url_for('user.achievements'))
+#         flash(f"Your progress for {achievement_name} has been updated to {progress}!", "success")
+#         return redirect(url_for('user.achievements'))
     
-    flash("Failed to track achievement.", "danger")
-    return redirect(url_for('user.achievements'))
+#     flash("Failed to track achievement.", "danger")
+#     return redirect(url_for('user.achievements'))
 
-@user.route('/achievements', methods=['GET', 'POST'])
-@login_required
-def achievements():
-    form = AchievementTrackingForm()
-    user_achievements = UserAchievement.query.filter_by(user_id=current_user.id).all()
+# @user.route('/achievements', methods=['GET', 'POST'])
+# @login_required
+# def achievements():
+#     form = AchievementTrackingForm()
+#     user_achievements = UserAchievement.query.filter_by(user_id=current_user.id).all()
 
-    if form.validate_on_submit():
-        achievement_name = form.achievement_name.data
-        progress = form.progress.data
+#     if form.validate_on_submit():
+#         achievement_name = form.achievement_name.data
+#         progress = form.progress.data
 
-        # Update the user's progress for the specified achievement
-        if achievement_name == 'Completed Recipes':
-            current_user.completed_recipes += progress
-        elif achievement_name == 'Recipes Created':
-            current_user.recipes_created += progress
-        elif achievement_name == 'Recipes Shared':
-            current_user.recipes_shared += progress
+#         # Update the user's progress for the specified achievement
+#         if achievement_name == 'Completed Recipes':
+#             current_user.completed_recipes += progress
+#         elif achievement_name == 'Recipes Created':
+#             current_user.recipes_created += progress
+#         elif achievement_name == 'Recipes Shared':
+#             current_user.recipes_shared += progress
 
-        db.session.commit()
+#         db.session.commit()
 
-        # Check if the user has earned any new achievements
-        check_achievements(current_user)
+#         # Check if the user has earned any new achievements
+#         check_achievements(current_user)
 
-        flash('Achievement progress updated!', 'success')
-        return redirect(url_for('user.achievements'))
+#         flash('Achievement progress updated!', 'success')
+#         return redirect(url_for('user.achievements'))
 
-    return render_template('achievements.html', form=form, user=current_user, achievements=user_achievements)
+#     return render_template('achievements.html', form=form, user=current_user, achievements=user_achievements)
 
-@user.route('/increment_achievement/<int:achievement_id>', methods=['POST'])
-@login_required
-def increment_achievement(achievement_id):
-    if achievement_id == 1:
-        current_user.completed_recipes += 1
-    elif achievement_id == 2:
-        current_user.recipes_created += 1
-    elif achievement_id == 3:
-        current_user.recipes_shared += 1
+# @user.route('/increment_achievement/<int:achievement_id>', methods=['POST'])
+# @login_required
+# def increment_achievement(achievement_id):
+#     if achievement_id == 1:
+#         current_user.completed_recipes += 1
+#     elif achievement_id == 2:
+#         current_user.recipes_created += 1
+#     elif achievement_id == 3:
+#         current_user.recipes_shared += 1
 
-    db.session.commit()
-    check_achievements(current_user)
+#     db.session.commit()
+#     check_achievements(current_user)
     
-    flash("Achievement progress incremented!", "success")
-    return redirect(url_for('user.achievements'))
+#     flash("Achievement progress incremented!", "success")
+#     return redirect(url_for('user.achievements'))
 
 @user.route('/connect_friends', methods=['GET', 'POST'])
 @login_required
@@ -374,23 +373,57 @@ def save_image(image_data):
     return filename
 
 # Route to handle the post sharing
+from sqlalchemy import func
+
 @user.route('/share_post', methods=['GET', 'POST'])
 @login_required
 def share_post():
     form = SharePostForm()
+
+    # Get all active challenges by comparing end time with the current time
+    active_challenges = Challenge.query.filter(
+        func.datetime(Challenge.started_at) + func.cast(Challenge.duration, db.Integer) > func.now()
+    ).all()
+    
+    # Populate the challenge dropdown with active challenges
+    form.challenge.choices = [(challenge.id, challenge.name) for challenge in active_challenges]
+    form.challenge.choices.insert(0, (0, "No Challenge"))  # Add option for non-challenge posts
+
     if form.validate_on_submit():
         if form.image.data:
             image_file = save_image(form.image.data)
         else:
-            image_file = 'default.jpg'  # Provide a default image or handle as needed
+            image_file = 'default.jpg'
 
-        # Create a new post with the image file path
-        post = Post(image_file=image_file, message=form.message.data, user_id=current_user.id)
+        # Create a new post
+        post = Post(
+            image_file=image_file, 
+            message=form.message.data, 
+            user_id=current_user.id,
+            challenge_id=form.challenge.data if form.challenge.data != 0 else None  # Store challenge ID if selected
+        )
         db.session.add(post)
+
+        # Increment progress if a challenge was tagged
+        if form.challenge.data != 0:
+            participation = ChallengeParticipant.query.filter_by(
+                challenge_id=form.challenge.data, 
+                user_id=current_user.id
+            ).first()
+            if participation:
+                participation.progress += 1  # Increment the progress
+            else:
+                flash("You're not part of this challenge.", "danger")
+                db.session.rollback()  # Rollback the post creation if they're not part of the challenge
+                return redirect(url_for('user.share_post'))
+
         db.session.commit()
         flash('Your post has been shared!', 'success')
         return redirect(url_for('user.index'))
+
     return render_template('share_post.html', form=form)
+
+
 
 # Route to view posts from friends
 @user.route('/view_posts')
@@ -568,13 +601,14 @@ def create_challenge():
         else:
             icon_filename = 'default_icon.png'
 
-        # Create new challenge
+        # Create new challenge and set the start time to now
         challenge = Challenge(
             name=form.name.data,
             icon=icon_filename,
             creator_id=current_user.id,
             credits_required=form.credits_required.data,
-            duration=duration
+            duration=duration,
+            started_at=datetime.utcnow()  # Start the timer immediately when the challenge is created
         )
         
         db.session.add(challenge)
@@ -583,6 +617,7 @@ def create_challenge():
         return redirect(url_for('user.challenges'))
     
     return render_template('create_challenge.html', form=form)
+
 
 
 
@@ -632,28 +667,135 @@ def join_challenge(challenge_id):
 @user.route('/challenges', methods=['GET'])
 @login_required
 def challenges():
-    challenges = Challenge.query.all()  # Fetch all challenges from the database
+    # Fetch all challenges from the database
+    challenges = Challenge.query.all()
+
+    # Filter active challenges by comparing their end time with the current time
+    active_challenges = [challenge for challenge in challenges if challenge.get_end_time() > datetime.utcnow()]
+
     remaining_credits = current_user.credits
     joined_challenge_ids = [cp.challenge_id for cp in current_user.participated_challenges]
 
-    form = JoinChallengeForm()  # Add this line to create a form instance
+    form = JoinChallengeForm()
 
     return render_template('challenges.html',
-                           challenges=challenges,
+                           challenges=active_challenges,
                            joined_challenge_ids=joined_challenge_ids,
                            remaining_credits=remaining_credits,
                            form=form)
 
 
 
+@user.route('/achievements', methods=['GET'])
+@login_required
+def achievements():
+    # Fetch the achievements for the currently logged-in user
+    achievements = Achievement.query.filter_by(user_id=current_user.id).all()
+
+    print("Achievements for user:", achievements)  # Debugging output
+
+    # Render the achievements page with the user's achievements
+    return render_template('achievements.html', achievements=achievements)
+    
 
 
-@user.route('/leaderboard')
+
+def get_leaderboard_data():
+    # Assuming you want to show all challenges and participants sorted by their progress
+    leaderboard_data = []
+
+    # Get all challenges
+    challenges = Challenge.query.all()
+
+    for challenge in challenges:
+        # Get all participants for the current challenge, ordered by their progress (highest first)
+        participants = ChallengeParticipant.query.filter_by(challenge_id=challenge.id).order_by(ChallengeParticipant.progress.desc()).all()
+
+        # Add each participant's info to the leaderboard
+        for participant in participants:
+            leaderboard_data.append({
+                'username': participant.user.username,  # Assuming ChallengeParticipant has a reference to the User
+                'challenge_name': challenge.name,
+                'progress': participant.progress,
+                'wagered_credits': participant.wagered_credits
+            })
+
+    # Optionally sort the leaderboard data here (if needed)
+    # You could sort across all challenges or each challenge individually
+
+    return leaderboard_data
+
+
+@user.route('/leaderboard', methods=['GET'])
 @login_required
 def leaderboard():
-    # Get all challenges with participants
+    # Fetch all active challenges
     challenges = Challenge.query.all()
-    return render_template('leaderboard.html', challenges=challenges)
+    
+    # Prepare leaderboard data
+    leaderboard_data = []
+    for challenge in challenges:
+        # Calculate time remaining
+        time_remaining = max(0, (challenge.get_end_time() - datetime.utcnow()).total_seconds())
+        
+        # Sort participants by progress in descending order (for leaderboard ranking)
+        sorted_participants = sorted(challenge.participants, key=lambda p: p.progress, reverse=True)
+        
+        # Prepare data for each challenge with sorted participants
+        challenge_data = {
+            'challenge': challenge,
+            'time_remaining': time_remaining,
+            'participants': sorted_participants  # Sorted by progress for leaderboard display
+        }
+        leaderboard_data.append(challenge_data)
+
+    # Render the leaderboard template with the leaderboard data
+    return render_template('leaderboard.html', leaderboard_data=leaderboard_data)
+
+
+def get_challenge_winner(challenge):
+    # Assuming the ChallengeParticipant model has a 'progress' field
+    # Get the participant with the highest progress in the challenge
+    winner = ChallengeParticipant.query.filter_by(challenge_id=challenge.id).order_by(ChallengeParticipant.progress.desc()).first()
+    
+    return winner  # This will return the participant object with the highest progress
+
+
+def end_challenge(challenge):
+    # Get the winner
+    winner = get_challenge_winner(challenge)
+
+    if winner:
+        # Calculate total wagered credits
+        total_wagered = sum([p.wagered_credits for p in challenge.participants])
+
+        # Award the winner with the total credits
+        winner.user.credits += total_wagered
+
+        # Create a new achievement for the winner
+        achievement = Achievement(
+            challenge_name=challenge.name,
+            credits_won=total_wagered,
+            challenge_duration=challenge.duration,
+            participants=len(challenge.participants),
+            user_id=winner.user.id  # Ensure the correct user_id is set
+        )
+
+        # Append the achievement to the winner and commit to the database
+        db.session.add(achievement)
+        db.session.commit()
+
+        # Debugging output to check if achievement is created
+        print(f"Achievement created for user {winner.user.username}: {achievement}")
+
+    # Delete or archive the challenge (if you want to remove it entirely)
+    db.session.delete(challenge)
+    db.session.commit()
+
+
+
+
+
 
 
 # Placeholder routes for future features

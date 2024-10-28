@@ -27,11 +27,15 @@ class User(db.Model, UserMixin):
     tools = db.relationship('Tool', backref='owner', lazy=True, cascade="all, delete-orphan")
     posts = db.relationship('Post', backref='author', lazy=True, cascade="all, delete-orphan")
     
-   # Relationship to created challenges
+    # Relationship to created challenges
     created_challenges = db.relationship('Challenge', backref='creator', lazy=True, overlaps="challenge_creator,created_challenges")
+    
+    # Relationship to participated challenges
     participated_challenges = db.relationship('ChallengeParticipant', backref='user_participation', lazy=True, overlaps="participant,challenges_participated")
-    # 'lazy=True' means that related objects are loaded when they are accessed
-    # 'cascade="all, delete-orphan"' ensures that challenges are deleted if the user is deleted
+    
+    # New relationship to achievements
+    achievements = db.relationship('Achievement', backref='user', lazy=True, cascade="all, delete-orphan")
+
 
 
 # Define the Tool model which stores information about users' tools
@@ -41,26 +45,20 @@ class Tool(db.Model, UserMixin):
     unit = db.Column(db.String(50), nullable=False)  # Unit of measurement for the tool
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Foreign key linking tool to its owner
 
-# Define the Achievement model that stores information about different achievements available in the system
-class Achievement(db.Model):
-    __tablename__ = 'achievements'  # Custom table name
-    id = db.Column(db.Integer, primary_key=True)  # Unique ID for each achievement
-    name = db.Column(db.String(100), nullable=False)  # Name of the achievement
-    description = db.Column(db.String(200), nullable=False)  # Description of the achievement
-    criteria = db.Column(db.String(200), nullable=False)  # Criteria for earning the achievement
-    icon_url = db.Column(db.String(255), nullable=True)  # URL to the icon representing the achievement
 
-# Define the UserAchievement model to track which users have earned which achievements
-class UserAchievement(db.Model):
-    __tablename__ = 'user_achievements'  # Custom table name
-    id = db.Column(db.Integer, primary_key=True)  # Unique ID for each user achievement record
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Foreign key linking to the User
-    achievement_id = db.Column(db.Integer, db.ForeignKey('achievements.id'), nullable=False)  # Foreign key linking to the Achievement
-    date_achieved = db.Column(db.Date, default=datetime.now(timezone.utc))  # Date when the achievement was earned (default: current time)
-    
-    # Relationship to the Achievement model
-    achievement = db.relationship('Achievement', backref='user_achievements', lazy=True)
-    # 'backref' provides access to the 'user_achievements' attribute from the Achievement model
+class Achievement(db.Model):
+    __tablename__ = 'achievement'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ForeignKey to User
+    challenge_name = db.Column(db.String(100), nullable=False)
+    credits_won = db.Column(db.Integer, nullable=False)
+    challenge_duration = db.Column(db.Integer, nullable=False)
+    participants = db.Column(db.Integer, nullable=False)
+
+    # The backref in User takes care of the relationship to User, no need to add it again here
+
+
 
 
 from app import db
@@ -68,11 +66,14 @@ from datetime import datetime, timezone
 
 # Define the Post model to store users' shared posts, such as recipe posts with images and messages
 class Post(db.Model):
+    __tablename__ = 'post'
+    
     id = db.Column(db.Integer, primary_key=True)  # Unique ID for each post
     image_file = db.Column(db.String(100), nullable=False)  # Path to the image associated with the post
     message = db.Column(db.Text, nullable=False)  # Message associated with the post
     date_posted = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())  # Date when the post was created
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Foreign key linking the post to the user
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Foreign key linking the post to the user who created it
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=True)  # Optional foreign key to link the post to a challenge
 
 
 # Define the Friendship model to represent the relationship between users (user friendships)
@@ -95,6 +96,8 @@ class Friendship(db.Model):
     # 'backref' provides convenient access to friendship records and friends from the User model
 
 
+from datetime import datetime, timedelta
+
 class Challenge(db.Model):
     __tablename__ = 'challenge'
     id = db.Column(db.Integer, primary_key=True)
@@ -103,24 +106,42 @@ class Challenge(db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     credits_required = db.Column(db.Integer, nullable=False)
     duration = db.Column(db.Integer, nullable=False)  # Store duration in seconds
+    started_at = db.Column(db.DateTime, nullable=False)  # Track when the challenge starts
 
     # Relationship to participants
     participants = db.relationship('ChallengeParticipant', backref='challenge_participation', lazy=True, cascade="all, delete-orphan")
 
-    def __init__(self, name, icon, creator_id, credits_required, duration):
+    def __init__(self, name, icon, creator_id, credits_required, duration, started_at=None):
         self.name = name
         self.icon = icon
         self.creator_id = creator_id
         self.credits_required = credits_required
         self.duration = duration
+        self.started_at = started_at or datetime.utcnow()  # Default to current time if not provided
 
     @property
     def time_remaining(self):
-        # Use duration to calculate remaining time
+        # Calculate remaining time by comparing the current time and the end time
+        if self.started_at:
+            time_passed = (datetime.utcnow() - self.started_at).total_seconds()
+            return max(self.duration - time_passed, 0)
         return self.duration
 
+    def get_end_time(self):
+        # Calculate the end time based on the start time and duration
+        return self.started_at + timedelta(seconds=self.duration)
 
+    def is_active(self):
+        # Check if the challenge is still active by comparing current time with end time
+        return datetime.utcnow() < self.get_end_time()
 
+    def get_winner(self):
+        # Find the participant with the highest progress
+        if not self.participants:
+            return None
+        # Assuming the 'progress' field is the determining factor
+        winner = max(self.participants, key=lambda p: p.progress)
+        return winner
 
 class ChallengeParticipant(db.Model):
     __tablename__ = 'challenge_participant'

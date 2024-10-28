@@ -1,4 +1,3 @@
-<!-- leaderboard.html -->
 {% extends "base.html" %}
 
 {% block title %}Leaderboard{% endblock %}
@@ -7,14 +6,14 @@
   <div class="container">
     <h1 class="mt-4">Leaderboard</h1>
     <div class="row">
-      {% for challenge in challenges %}
+      {% for item in leaderboard_data %}
         <div class="col-md-12">
-          <h3>{{ challenge.name }}</h3>
+          <h3>{{ item.challenge.name }}</h3>
 
           <!-- Countdown timer -->
           <p class="card-text">
             <strong>Ends in:</strong> 
-            <span class="countdown-timer" data-duration="{{ challenge.duration }}"></span>
+            <span class="countdown-timer" data-remaining-time="{{ item.time_remaining }}"></span>
           </p>
 
           <div class="table-responsive">
@@ -27,9 +26,9 @@
                 </tr>
               </thead>
               <tbody>
-                {% for participant in challenge.participants %}
+                {% for participant in item.participants %}
                   <tr>
-                    <td>{{ participant.user.username }}</td>
+                    <td>{{ loop.index }}. {{ participant.user.username }}</td>
                     <td>{{ participant.progress }}%</td>
                     <td>{{ participant.wagered_credits }}</td>
                   </tr>
@@ -38,11 +37,12 @@
             </table>
           </div>
         </div>
+      {% else %}
+        <p>No active challenges at the moment.</p>
       {% endfor %}
     </div>
   </div>
 {% endblock %}
-
 
 {% block scripts %}
 <script>
@@ -51,25 +51,26 @@ function startCountdown() {
   const timers = document.querySelectorAll('.countdown-timer');
 
   timers.forEach(timer => {
-    let duration = parseInt(timer.getAttribute('data-duration'));
+    // Get the remaining time from the data attribute
+    let remainingTime = parseInt(timer.getAttribute('data-remaining-time'));
 
     function updateTimer() {
-      if (duration <= 0) {
+      if (remainingTime <= 0) {
         timer.textContent = "Challenge Ended";
         return;
       }
 
-      const days = Math.floor(duration / (3600 * 24));
-      const hours = Math.floor((duration % (3600 * 24)) / 3600);
-      const minutes = Math.floor((duration % 3600) / 60);
-      const seconds = duration % 60;
+      const days = Math.floor(remainingTime / (3600 * 24));
+      const hours = Math.floor((remainingTime % (3600 * 24)) / 3600);
+      const minutes = Math.floor((remainingTime % 3600) / 60);
+      const seconds = remainingTime % 60;
 
       timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-      duration--;
+      remainingTime--;
     }
 
     updateTimer();
-    setInterval(updateTimer, 1000);
+    setInterval(updateTimer, 1000);  // Update every second
   });
 }
 
@@ -77,4 +78,3 @@ function startCountdown() {
 document.addEventListener('DOMContentLoaded', startCountdown);
 </script>
 {% endblock %}
-

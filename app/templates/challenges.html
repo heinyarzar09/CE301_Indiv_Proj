@@ -20,7 +20,8 @@
               <!-- Countdown timer -->
               <p class="card-text">
                 <strong>Ends in:</strong> 
-                <span class="countdown-timer" data-duration="{{ challenge.duration }}"></span>
+                <!-- Pass remaining time instead of duration -->
+                <span class="countdown-timer" data-remaining-time="{{ challenge.time_remaining }}"></span>
               </p>
 
               <!-- Check if the user has already joined the challenge -->
@@ -49,25 +50,26 @@ function startCountdown() {
   const timers = document.querySelectorAll('.countdown-timer');
 
   timers.forEach(timer => {
-    let duration = parseInt(timer.getAttribute('data-duration'));
+    // Get the remaining time from the data attribute
+    let remainingTime = parseInt(timer.getAttribute('data-remaining-time'));
 
     function updateTimer() {
-      if (duration <= 0) {
+      if (remainingTime <= 0) {
         timer.textContent = "Challenge Ended";
         return;
       }
 
-      const days = Math.floor(duration / (3600 * 24));
-      const hours = Math.floor((duration % (3600 * 24)) / 3600);
-      const minutes = Math.floor((duration % 3600) / 60);
-      const seconds = duration % 60;
+      const days = Math.floor(remainingTime / (3600 * 24));
+      const hours = Math.floor((remainingTime % (3600 * 24)) / 3600);
+      const minutes = Math.floor((remainingTime % 3600) / 60);
+      const seconds = remainingTime % 60;
 
       timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-      duration--;
+      remainingTime--;
     }
 
     updateTimer();
-    setInterval(updateTimer, 1000);
+    setInterval(updateTimer, 1000);  // Update every second
   });
 }
 
