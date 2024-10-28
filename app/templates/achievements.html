@@ -1,28 +1,29 @@
 {% extends "base.html" %}
 
-{% block title %}My Achievements{% endblock %}
-
 {% block content %}
   <div class="container">
-    <h1 class="mt-4">My Achievements</h1>
-
-    {% if achievements %}
-      <div class="row">
-        {% for achievement in achievements %}
-          <div class="col-md-4">
-            <div class="card mb-4">
-              <div class="card-body">
-                <h5 class="card-title">{{ achievement.challenge_name }}</h5>
-                <p class="card-text">Credits Won: {{ achievement.credits_won }}</p>
-                <p class="card-text">Duration: {{ achievement.challenge_duration }} seconds</p>
-                <p class="card-text">Participants: {{ achievement.participants }}</p>
+    <h1>Your Achievements</h1>
+    
+    {% if completed_challenges %}
+      <ul class="list-group">
+        {% for challenge in completed_challenges %}
+          <li class="list-group-item">
+            <div class="row">
+              <div class="col-md-3">
+                <!-- Display Challenge Image -->
+                <img src="{{ url_for('static', filename='challenges/' + challenge.image) }}" alt="{{ challenge.name }}" class="img-fluid" style="max-width: 100px; max-height: 100px;">
+              </div>
+              <div class="col-md-9">
+                <h5>{{ challenge.name }}</h5>
+                <p>Completed on: {{ challenge.completion_time }}</p>
+                <p>Credits Won: {{ challenge.credits }}</p>
               </div>
             </div>
-          </div>
+          </li>
         {% endfor %}
-      </div>
+      </ul>
     {% else %}
-      <p>You have no achievements yet.</p>
+      <p>You haven't completed any challenges yet.</p>
     {% endif %}
   </div>
 {% endblock %}

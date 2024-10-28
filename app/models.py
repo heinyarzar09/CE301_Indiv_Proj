@@ -51,12 +51,10 @@ class Achievement(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ForeignKey to User
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=False)  # ForeignKey to Challenge
     challenge_name = db.Column(db.String(100), nullable=False)
     credits_won = db.Column(db.Integer, nullable=False)
-    challenge_duration = db.Column(db.Integer, nullable=False)
-    participants = db.Column(db.Integer, nullable=False)
-
-    # The backref in User takes care of the relationship to User, no need to add it again here
+    completion_time = db.Column(db.DateTime, nullable=False)  # Store when the achievement was completed
 
 
 
@@ -151,9 +149,10 @@ class ChallengeParticipant(db.Model):
     wagered_credits = db.Column(db.Integer, nullable=False)
     progress = db.Column(db.Float, default=0)  # Progress for tracking in leaderboard
     date_joined = db.Column(db.DateTime, default=db.func.current_timestamp())
-
+    credited = db.Column(db.Boolean, default=False)
     # Relationship to the user participating in the challenge
-    user = db.relationship('User', backref='participations', overlaps="participant,challenges_participated")
+    user = db.relationship('User', backref='participations')
 
-    # Relationship to the challenge, using a unique backref
-    challenge = db.relationship('Challenge', backref='challenge_participants', overlaps="participants")
+    # Relationship to the challenge with a unique backref name
+    challenge = db.relationship('Challenge', backref='participants_in_challenge')
+

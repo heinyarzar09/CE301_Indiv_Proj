@@ -140,19 +140,14 @@ class AchievementTrackingForm(FlaskForm):
 
 # Form for sharing a post
 class SharePostForm(FlaskForm):
-    # File field for uploading an image with allowed image types
+    # File field for uploading an image (optional)
     image = FileField('Upload Image', validators=[DataRequired()])
     # Text area for writing a message to accompany the post
     message = TextAreaField('Message', validators=[DataRequired()])
     # Dropdown to select the challenge associated with the post
-    challenge = SelectField('Tag a Challenge', coerce=int, validators=[DataRequired()])
+    challenge = SelectField('Tag a Challenge', coerce=int, validators=[Optional()])
     # Submit button for the post sharing form
     submit = SubmitField('Share Post')
-
-    def __init__(self, *args, **kwargs):
-        super(SharePostForm, self).__init__(*args, **kwargs)
-        # Populate the challenge dropdown with available challenges
-        self.challenge.choices = [(challenge.id, challenge.name) for challenge in Challenge.query.all()]
 
 class AddCreditsForm(FlaskForm):
     credits = IntegerField('Credits to Add', validators=[DataRequired()])

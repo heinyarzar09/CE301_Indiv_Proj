@@ -5,18 +5,32 @@
     <h1>Share a Post</h1>
     <form method="POST" enctype="multipart/form-data">
       {{ form.hidden_tag() }}
+      
+      <!-- Upload Image Field -->
       <div class="form-group">
         {{ form.image.label }}
         {{ form.image(class="form-control-file") }}
       </div>
+      
+      <!-- Message Field -->
       <div class="form-group">
         {{ form.message.label }}
         {{ form.message(class="form-control") }}
       </div>
+      
+      <!-- Challenge Dropdown Field -->
       <div class="form-group">
         {{ form.challenge.label }}
-        {{ form.challenge(class="form-control") }}
+        <select name="challenge" class="form-control">
+          {% for choice in form.challenge.choices %}
+            <option value="{{ choice[0] }}" {% if form.challenge.data == choice[0] %}selected{% endif %}>
+              {{ choice[1] }}
+            </option>
+          {% endfor %}
+        </select>
       </div>
+
+      <!-- Share Post Button -->
       <button type="submit" class="btn btn-primary">Share Post</button>
     </form>
   </div>

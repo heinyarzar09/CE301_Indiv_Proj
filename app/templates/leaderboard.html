@@ -29,7 +29,7 @@
                 {% for participant in item.participants %}
                   <tr>
                     <td>{{ loop.index }}. {{ participant.user.username }}</td>
-                    <td>{{ participant.progress }}%</td>
+                    <td>{{ participant.progress | int}}</td>
                     <td>{{ participant.wagered_credits }}</td>
                   </tr>
                 {% endfor %}
