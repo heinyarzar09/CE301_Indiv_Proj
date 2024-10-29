@@ -57,11 +57,6 @@ class Achievement(db.Model):
     completion_time = db.Column(db.DateTime, nullable=False)  # Store when the achievement was completed
 
 
-
-
-from app import db
-from datetime import datetime, timezone
-
 # Define the Post model to store users' shared posts, such as recipe posts with images and messages
 class Post(db.Model):
     __tablename__ = 'post'
@@ -172,4 +167,52 @@ class ChallengeParticipant(db.Model):
     # Relationship to the challenge with a unique backref name
     challenge = db.relationship('Challenge', backref='participants_in_challenge')
 
+
+class CreditRequest(db.Model):
+    __tablename__ = 'credit_request'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(db.String(20), default='Pending')
+    proof_image = db.Column(db.String(200), nullable=False)
+    credits_requested = db.Column(db.Integer, nullable=False)
+    date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # Relationship to user
+    user = db.relationship('User', backref='credit_requests')
+
+    def __init__(self, user_id, proof_image, credits_requested):
+        self.user_id = user_id
+        self.proof_image = proof_image
+        self.credits_requested = credits_requested
+
+class AdminCreditAction(db.Model):
+    __tablename__ = 'admin_credit_action'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    request_id = db.Column(db.Integer, db.ForeignKey('credit_request.id'), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    action = db.Column(db.String(20), nullable=False)
+    added_credits = db.Column(db.Integer, default=0)
+    action_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    request = db.relationship('CreditRequest', backref='admin_actions')
+    admin = db.relationship('User', backref='admin_actions')
+
+    def __init__(self, request_id, admin_id, action, added_credits=0):
+        self.request_id = request_id
+        self.admin_id = admin_id
+        self.action = action
+        self.added_credits = added_credits
+
+class AdminNotification(db.Model):
+    __tablename__ = 'admin_notification'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    credit_request_id = db.Column(db.Integer, db.ForeignKey('credit_request.id'), nullable=False)
+    reviewed = db.Column(db.Boolean, default=False)
+
+    # Relationship to CreditRequest
+    credit_request = db.relationship('CreditRequest', backref='notifications')
 

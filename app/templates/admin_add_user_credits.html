@@ -1,0 +1,46 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Add User's Credits{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Pending Credit Requests</h1>
+    
+    {% if pending_requests %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Requested Credits</th>
+                    <th>Proof of Payment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in pending_requests %}
+                <tr>
+                    <td>{{ request.user.username }}</td>
+                    <td>{{ request.credits_requested }}</td>
+                    <td>
+                        {% if request.proof_image %}
+                            <img src="{{ url_for('static', filename='payments/' ~ request.proof_image) }}" alt="Proof" style="max-width: 100px;">
+                        {% else %}
+                            No proof uploaded
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.add_user_credits') }}">
+                            <input type="hidden" name="credit_request_id" value="{{ request.id }}">
+                            <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No pending credit requests.</p>
+    {% endif %}
+</div>
+{% endblock %}

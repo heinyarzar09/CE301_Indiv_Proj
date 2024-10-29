@@ -2,8 +2,10 @@
 from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import current_user, login_required  # Flask-Login for managing user authentication
 from app import db, bcrypt  # Importing database instance and bcrypt for password hashing
-from app.forms import ResetPasswordForm, AdminAddCreditsForm  # Importing form for resetting passwords
-from app.models import User, Friendship  # Importing User model for managing user data
+from app.forms import ResetPasswordForm, AdminAddCreditsForm, CreditApprovalForm # Importing form for resetting passwords
+from app.models import User, Friendship, CreditRequest, AdminNotification  # Importing User model for managing user data
+
+
 
 # Create a blueprint for admin-related routes
 admin = Blueprint('admin', __name__)
@@ -123,3 +125,54 @@ def add_credits(user_id):
     return render_template('add_credits.html', form=form, user=user)
 
 
+
+
+@admin.route('/credit_request_history')
+@login_required
+def credit_request_history():
+    # Retrieve all approved and rejected credit requests
+    credit_requests = CreditRequest.query.filter(CreditRequest.status.in_(['Approved', 'Rejected'])).order_by(CreditRequest.date_submitted.desc()).all()
+    return render_template('admin_credit_request_history.html', credit_requests=credit_requests)
+
+
+
+
+@admin.route('/add_user_credits', methods=['GET', 'POST'])
+@login_required
+def add_user_credits():
+    # Fetch all pending credit requests
+    pending_requests = CreditRequest.query.filter_by(status="Pending").all()
+    
+    if request.method == 'POST':
+        # Get data from the form submission
+        credit_request_id = request.form.get("credit_request_id")
+        action = request.form.get("action")  # "approve" or "reject"
+        
+        # Retrieve the credit request and associated user
+        credit_request = CreditRequest.query.get_or_404(credit_request_id)
+        user = credit_request.user
+        
+        if action == "approve":
+            # Approve the request and add the requested credits
+            user.credits += credit_request.credits_requested
+            credit_request.status = "Approved"
+            flash(f"{credit_request.credits_requested} credits added to {user.username}'s account and request approved.", "success")
+        
+        elif action == "reject":
+            # Reject the request without adding credits
+            credit_request.status = "Rejected"
+            flash(f"Credit request from {user.username} has been rejected.", "info")
+        
+        # Mark notification as reviewed if any
+        notification = AdminNotification.query.filter_by(credit_request_id=credit_request.id).first()
+        if notification:
+            notification.reviewed = True
+        
+        # Commit changes to the database
+        db.session.commit()
+        
+        # Redirect back to the same page to show updated list
+        return redirect(url_for('admin.add_user_credits'))
+    
+    # Render the page with pending requests
+    return render_template('admin_add_user_credits.html', pending_requests=pending_requests)

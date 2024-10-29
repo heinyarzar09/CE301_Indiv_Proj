@@ -3,8 +3,8 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
 from app import db, bcrypt
-from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm
-from app.models import User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant, db
+from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm, CreditRequestForm
+from app.models import User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant, db, CreditRequest, AdminNotification
 from app.utils import convert_measurement, process_recipe, get_all_users_except_current, get_friends_for_user, get_incoming_friend_requests, get_outgoing_friend_requests, get_incoming_friend_requests, get_recent_follows
 from app.forms import AchievementTrackingForm, ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm, JoinChallengeForm 
 from datetime import datetime, timedelta, timezone
@@ -507,19 +507,22 @@ def create_challenge():
 
 
 
-# Function to save images (like post images or challenge icons)
-def save_image(form_image):
+# Function to save images (like post images, challenge icons, or payment proofs)
+def save_image(form_image, folder='uploads'):
     try:
         # Generate a random filename
         random_hex = secrets.token_hex(8)
         _, f_ext = os.path.splitext(form_image.filename)
         image_filename = random_hex + f_ext
-        image_path = os.path.join(current_app.root_path, 'static/challenges', image_filename)
+        
+        # Determine the folder path
+        folder_path = os.path.join(current_app.root_path, 'static', folder)
+        os.makedirs(folder_path, exist_ok=True)  # Ensure the directory exists
+        
+        # Full image path
+        image_path = os.path.join(folder_path, image_filename)
 
-        # Ensure the directory exists
-        os.makedirs(os.path.dirname(image_path), exist_ok=True)
-
-        # Resize the image or process it as needed
+        # Resize the image if needed
         output_size = (200, 200)
         img = Image.open(form_image)
         img.thumbnail(output_size)
@@ -529,8 +532,7 @@ def save_image(form_image):
 
     except Exception as e:
         print(f"Error saving image: {e}")
-        return None  # Return None or a default filename if saving fails
-
+        return None
 
 @user.route('/join_challenge/<int:challenge_id>', methods=['POST'])
 @login_required
@@ -779,6 +781,45 @@ def end_challenge(challenge):
 
 
 
+@user.route('/add_credits', methods=['GET', 'POST'])
+@login_required
+def add_credits():
+    form = CreditRequestForm()
+    
+    if form.validate_on_submit():
+        # Save the payment proof image
+        proof_image_filename = save_image(form.proof.data, folder='payments')  # Make sure 'payments' folder exists in /static
+
+        # Step 1: Create and commit the credit request first to ensure it has an ID
+        credit_request = CreditRequest(
+            user_id=current_user.id,
+            proof_image=proof_image_filename,
+            credits_requested=form.credits_requested.data
+        )
+        db.session.add(credit_request)
+        db.session.commit()  # Commit to ensure the credit_request.id is available
+
+        # Step 2: Now, create the notification with a valid credit_request_id
+        notification = AdminNotification(credit_request_id=credit_request.id)
+        db.session.add(notification)
+        db.session.commit()  # Commit the notification
+
+        flash('Your credit request has been submitted for review.', 'success')
+        return redirect(url_for('user.add_credit_status'))
+    
+    return render_template('add_credits.html', form=form)
+
+
+
+
+
+
+@user.route('/add_credit_status')
+@login_required
+def add_credit_status():
+    # Fetch the user's credit requests
+    credit_requests = CreditRequest.query.filter_by(user_id=current_user.id).order_by(CreditRequest.date_submitted.desc()).all()
+    return render_template('add_credit_status.html', credit_requests=credit_requests)
 
 
 

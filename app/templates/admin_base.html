@@ -25,8 +25,15 @@
                     <a class="nav-link" href="{{ url_for('admin.settings') }}">Settings</a>  {# Link to the Settings page #}
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.credit_request_history') }}">Credit Request History</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.add_user_credits') }}">Add User's Credit</a>
+                </li>                             
+                <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>  {# Link to log out from the admin account #}
                 </li>
+
             </ul>
         </div>
     </nav>
@@ -43,6 +50,7 @@
         {% block content %}{% endblock %}  {# Placeholder for page-specific content to be inserted by child templates #}
     </div>
 
+    
     <!-- JavaScript files for Bootstrap functionality -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>  {# jQuery library for Bootstrap #}
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>  {# Popper.js for Bootstrap dropdowns and tooltips #}

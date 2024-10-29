@@ -1,0 +1,32 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Credit Request History</h1>
+    {% if credit_requests %}
+        <ul class="list-group">
+            {% for request in credit_requests %}
+                <li class="list-group-item">
+                    <p><strong>Date Submitted:</strong> {{ request.date_submitted }}</p>
+                    <p><strong>User:</strong> {{ request.user.username }}</p>
+                    <p><strong>Requested Credits:</strong> {{ request.credits_requested }}</p>
+                    
+                    <!-- Display proof image if available -->
+                    <p><strong>Proof of Payment:</strong></p>
+                    <img src="{{ url_for('static', filename='payments/' ~ request.proof_image) }}" alt="Proof Image" style="max-width: 100px;">
+
+                    <!-- Display status with color -->
+                    <p>
+                        <strong>Status:</strong>
+                        <span class="badge {% if request.status == 'Approved' %}badge-success{% elif request.status == 'Rejected' %}badge-danger{% else %}badge-warning{% endif %}">
+                            {{ request.status }}
+                        </span>
+                    </p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No approved or rejected credit requests found.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -76,25 +76,40 @@
                           <a class="dropdown-item" href="{{ url_for('user.challenges') }}">View Challenges</a>
                           <a class="dropdown-item" href="{{ url_for('user.leaderboard') }}">Leaderboard</a>
                           <a class="dropdown-item" href="{{ url_for('user.challenge_history') }}">Challenge History</a>
-                          <a class="dropdown-item" href="{{ url_for('user.create_challenge') }}">Create a Challenge</a> <!-- New Link for creating a challenge -->
+                          <a class="dropdown-item" href="{{ url_for('user.create_challenge') }}">Create a Challenge</a>
+                          <a class="dropdown-item" href="{{ url_for('user.achievements') }}">My Achievements</a>
                         </div>
                       </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('user.achievements') }}">My Achievements</a>
+                    <!-- User payments -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="paymentsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Payments
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="paymentsDropdown">
+                            <a class="nav-link" href="{{ url_for('user.add_credits') }}">Add Credits</a>
+                            <a class="nav-link" href="{{ url_for('user.add_credit_status') }}">Add Credit Status</a>
+                        </div>
                     </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('user.manual_conversion_tool') }}">Manual Recipe Conversion</a>
+
+                    <!-- User Conversion -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="conversionDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Conversion
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="conversionDropdown">
+                            <a class="nav-link" href="{{ url_for('user.manual_conversion_tool') }}">Manual Recipe Conversion</a>
+                            <a class="nav-link" href="{{ url_for('user.automatic_conversion') }}">Automatic Recipe Conversion</a>
+                        </div>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('user.automatic_conversion') }}">Automatic Recipe Conversion</a>
-                    </li>
+
+
     
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>
                     </li>
     
+
                     {% if current_user.role == 'admin' %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
@@ -126,6 +141,7 @@
         {% block content %}{% endblock %}  {# Placeholder for page-specific content to be inserted #}
     </div>
 
+    
     <!-- JavaScript files for Bootstrap functionality -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>  {# jQuery library for Bootstrap #}
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>  {# Popper.js for Bootstrap dropdowns and tooltips #}

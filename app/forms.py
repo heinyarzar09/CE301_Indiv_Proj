@@ -1,6 +1,6 @@
 # Import necessary modules from Flask-WTF and WTForms
 from flask_wtf import FlaskForm  # Base class for creating forms in Flask
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField, IntegerField, FileField  # Different types of form fields
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField, IntegerField, FileField, HiddenField # Different types of form fields
 from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange, Optional  # Validators for form fields
 from app.models import User, Tool, Challenge  # Import models for validation
 from flask_wtf.file import FileField, FileAllowed  # File fields for handling file uploads
@@ -177,3 +177,13 @@ class AdminAddCreditsForm(FlaskForm):
         super(AdminAddCreditsForm, self).__init__(*args, **kwargs)
         self.user.choices = [(user.id, user.username) for user in users]
 
+class CreditRequestForm(FlaskForm):
+    proof = FileField('Upload Proof of Payment', validators=[DataRequired(), FileAllowed(['jpg', 'jpeg', 'png'], 'Images only!')])
+    credits_requested = IntegerField('Credits Requested', validators=[DataRequired(), NumberRange(min=1)])
+    submit = SubmitField('Submit')
+
+
+class CreditApprovalForm(FlaskForm):
+    credit_request_id = HiddenField()
+    approve = BooleanField('Approve')
+    submit = SubmitField('Update Status')
