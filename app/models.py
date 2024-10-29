@@ -84,6 +84,18 @@ class Post(db.Model):
     # Relationship to user
     user = db.relationship('User', backref='user_posts')
 
+    def is_liked_by(self, user):
+            return any(like.user_id == user.id for like in self.likes)
+
+class PostLike(db.Model):
+    __tablename__ = 'post_likes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    post = db.relationship('Post', backref='likes')
+    user = db.relationship('User', backref='liked_posts')
 
 
 # Define the Friendship model to represent the relationship between users (user friendships)

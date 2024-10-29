@@ -2,25 +2,106 @@
 
 {% block content %}
 <div class="container">
-    <h1>Posts</h1>
-    
-    <!-- Loop through each post to display it -->
-    <ul>
+    <h2>Posts</h2>
+    <div class="posts-container">
         {% for post in posts %}
-        <li>
-            <h3>{{ post.message }}</h3>
-            
-            <!-- Display the post image -->
-            <div>
-                <img src="{{ url_for('static', filename='challenges/' + (post.image_file or 'default.jpg')) }}" alt="Post image" style="width: 200px; height: 200px;">
+            <div class="post">
+                <div class="post-header">
+                    <h4>{{ post.user.username }}</h4>
+                    <small>Posted on {{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+                </div>
+                <div class="post-body">
+                    {% if post.image_file %}
+                        <img src="{{ url_for('static', filename='uploads/' + post.image_file) }}" alt="Post image" class="post-image">
+                    {% else %}
+                        <p class="no-image">No image available for this post.</p>
+                    {% endif %}
+                    <p class="post-message">{{ post.message }}</p>
+                </div>
+                <div class="post-footer">
+                    <form action="{{ url_for('user.like_post', post_id=post.id) }}" method="post">
+                        <button type="submit" class="btn btn-link">
+                            {% if post.is_liked_by(current_user) %}
+                                Unlike
+                            {% else %}
+                                Like
+                            {% endif %}
+                        </button>
+                        <span>{{ post.likes|length }} {{ 'Like' if post.likes|length == 1 else 'Likes' }}</span>
+                    </form>
+                </div>
             </div>
-            
-            <!-- Display post details -->
-            <p>Posted on {{ post.date_posted.strftime('%Y-%m-%d') }} by {{ post.author.username }}</p>
-        </li>
-        {% else %}
-        <p>No posts to display.</p>
         {% endfor %}
-    </ul>
+    </div>
 </div>
+
+<style>
+    /* Container for all posts */
+    .posts-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem; /* Adds space between posts */
+        margin-top: 1.5rem;
+    }
+
+    /* Individual post styling */
+    .post {
+        border: 1px solid #ddd;
+        padding: 1rem;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    /* Header styling (username and date) */
+    .post-header h4 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .post-header small {
+        color: #777;
+        font-size: 0.85rem;
+    }
+
+    /* Image styling */
+    .post-image {
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+    }
+
+    /* Description styling */
+    .post-message {
+        margin-top: 1rem;
+        font-size: 1rem;
+        color: #555;
+    }
+
+    /* No image text styling */
+    .no-image {
+        font-style: italic;
+        color: #888;
+    }
+
+    /* Footer styling (like button and count) */
+    .post-footer {
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .post-footer button {
+        color: #007bff;
+        font-size: 1rem;
+        text-decoration: none;
+    }
+
+    .post-footer span {
+        margin-left: 0.5rem;
+        color: #333;
+    }
+</style>
 {% endblock %}

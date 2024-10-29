@@ -4,7 +4,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
 from app import db, bcrypt
 from app.forms import ForgotPasswordForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm, CreditRequestForm
-from app.models import PasswordResetRequest, ShoppingList, User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant, db, CreditRequest, AdminNotification
+from app.models import PasswordResetRequest, PostLike, ShoppingList, User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant, db, CreditRequest, AdminNotification
 from app.utils import convert_measurement, process_recipe, get_all_users_except_current, get_friends_for_user, get_incoming_friend_requests, get_outgoing_friend_requests, get_incoming_friend_requests, get_recent_follows
 from app.forms import AchievementTrackingForm, ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm, JoinChallengeForm 
 from datetime import datetime, timedelta, timezone
@@ -375,6 +375,25 @@ def notifications():
                            incoming_requests=incoming_requests, 
                            outgoing_requests=outgoing_requests, 
                            recent_follows=recent_follows)
+
+@user.route('/like_post/<int:post_id>', methods=['POST'])
+@login_required
+def like_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    existing_like = PostLike.query.filter_by(post_id=post_id, user_id=current_user.id).first()
+
+    if existing_like:
+        db.session.delete(existing_like)
+        flash("You have unliked this post.", "info")
+    else:
+        like = PostLike(post_id=post_id, user_id=current_user.id)
+        db.session.add(like)
+        flash("You have liked this post!", "success")
+    
+    db.session.commit()
+    return redirect(request.referrer or url_for('user.posts'))
+
+
 
 @user.route('/approve_friend_request/<int:request_id>', methods=['POST'])
 @login_required
