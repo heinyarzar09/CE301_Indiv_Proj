@@ -20,7 +20,6 @@
               <!-- Countdown timer -->
               <p class="card-text">
                 <strong>Ends in:</strong> 
-                <!-- Pass remaining time instead of duration -->
                 <span class="countdown-timer" data-remaining-time="{{ challenge.time_remaining }}"></span>
               </p>
 
@@ -29,7 +28,6 @@
                 <button class="btn btn-success" disabled>Challenge Joined</button>
               {% else %}
                 <form method="POST" action="{{ url_for('user.join_challenge', challenge_id=challenge.id) }}">
-                  {{ form.hidden_tag() }}
                   <button type="submit" class="btn btn-primary">Join Challenge</button>
                 </form>
               {% endif %}
@@ -43,6 +41,7 @@
   </div>
 {% endblock %}
 
+
 {% block scripts %}
 <script>
 // Function to start the countdown timer
@@ -50,7 +49,6 @@ function startCountdown() {
   const timers = document.querySelectorAll('.countdown-timer');
 
   timers.forEach(timer => {
-    // Get the remaining time from the data attribute
     let remainingTime = parseInt(timer.getAttribute('data-remaining-time'));
 
     function updateTimer() {
@@ -69,11 +67,40 @@ function startCountdown() {
     }
 
     updateTimer();
-    setInterval(updateTimer, 1000);  // Update every second
+    setInterval(updateTimer, 1000);
   });
 }
 
 // Call startCountdown when the page loads
 document.addEventListener('DOMContentLoaded', startCountdown);
+
+// Function to change the button to "Challenge Joined" after form submission
+document.querySelectorAll('.join-button').forEach(button => {
+  button.addEventListener('click', function(event) {
+    event.preventDefault();  // Prevent the form from reloading the page
+
+    const challengeId = this.getAttribute('data-challenge-id');
+    const form = document.getElementById(`join-form-${challengeId}`);
+
+    // Send the form data using fetch API for seamless request
+    fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': form.querySelector('input[name="csrf_token"]').value
+      },
+      body: new FormData(form)
+    }).then(response => {
+      if (response.ok) {
+        // Change the button to "Challenge Joined"
+        button.textContent = 'Challenge Joined';
+        button.classList.remove('btn-primary');
+        button.classList.add('btn-success');
+        button.disabled = true;
+      } else {
+        console.error('Failed to join challenge:', response.statusText);
+      }
+    }).catch(error => console.error('Error:', error));
+  });
+});
 </script>
 {% endblock %}

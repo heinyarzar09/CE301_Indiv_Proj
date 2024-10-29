@@ -5,42 +5,45 @@
 {% block content %}
   <div class="container">
     <h1 class="mt-4">Leaderboard</h1>
-    <div class="row">
-      {% for item in leaderboard_data %}
-        <div class="col-md-12">
-          <h3>{{ item.challenge.name }}</h3>
+    
+    {% if leaderboard_data %}
+      <div class="row">
+        {% for item in leaderboard_data %}
+          <div class="col-md-12">
+            <h3>{{ item.challenge.name }}</h3>
 
-          <!-- Countdown timer -->
-          <p class="card-text">
-            <strong>Ends in:</strong> 
-            <span class="countdown-timer" data-remaining-time="{{ item.time_remaining }}"></span>
-          </p>
+            <!-- Countdown timer -->
+            <p class="card-text">
+              <strong>Ends in:</strong> 
+              <span class="countdown-timer" data-remaining-time="{{ item.time_remaining }}"></span>
+            </p>
 
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Progress</th>
-                  <th>Wagered Credits</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for participant in item.participants %}
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
                   <tr>
-                    <td>{{ loop.index }}. {{ participant.user.username }}</td>
-                    <td>{{ participant.progress | int}}</td>
-                    <td>{{ participant.wagered_credits }}</td>
+                    <th>User</th>
+                    <th>Progress</th>
+                    <th>Wagered Credits</th>
                   </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {% for participant in item.participants %}
+                    <tr>
+                      <td>{{ loop.index }}. {{ participant.user.username }}</td>
+                      <td>{{ participant.progress | int }}</td>
+                      <td>{{ participant.wagered_credits }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      {% else %}
-        <p>No active challenges at the moment.</p>
-      {% endfor %}
-    </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No active challenges at the moment.</p>
+    {% endif %}
   </div>
 {% endblock %}
 
@@ -51,7 +54,6 @@ function startCountdown() {
   const timers = document.querySelectorAll('.countdown-timer');
 
   timers.forEach(timer => {
-    // Get the remaining time from the data attribute
     let remainingTime = parseInt(timer.getAttribute('data-remaining-time'));
 
     function updateTimer() {
@@ -70,7 +72,7 @@ function startCountdown() {
     }
 
     updateTimer();
-    setInterval(updateTimer, 1000);  // Update every second
+    setInterval(updateTimer, 1000);
   });
 }
 

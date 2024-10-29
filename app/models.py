@@ -94,8 +94,6 @@ class Friendship(db.Model):
     # 'backref' provides convenient access to friendship records and friends from the User model
 
 
-from datetime import datetime, timedelta
-
 class Challenge(db.Model):
     __tablename__ = 'challenge'
     id = db.Column(db.Integer, primary_key=True)
@@ -103,8 +101,9 @@ class Challenge(db.Model):
     icon = db.Column(db.String(100))  # Path to the icon
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     credits_required = db.Column(db.Integer, nullable=False)
-    duration = db.Column(db.Integer, nullable=False)  # Store duration in seconds
-    started_at = db.Column(db.DateTime, nullable=False)  # Track when the challenge starts
+    duration = db.Column(db.Integer, nullable=False)  # Duration in seconds
+    started_at = db.Column(db.DateTime, nullable=False)  # Start time of the challenge
+    ended = db.Column(db.Boolean, default=False)  # Field to mark if the challenge has ended
 
     # Relationship to participants
     participants = db.relationship('ChallengeParticipant', backref='challenge_participation', lazy=True, cascade="all, delete-orphan")
@@ -115,23 +114,31 @@ class Challenge(db.Model):
         self.creator_id = creator_id
         self.credits_required = credits_required
         self.duration = duration
-        self.started_at = started_at or datetime.utcnow()  # Default to current time if not provided
+        self.started_at = started_at or datetime.now(timezone.utc)  # Default to current UTC time if not provided
 
     @property
     def time_remaining(self):
         # Calculate remaining time by comparing the current time and the end time
         if self.started_at:
-            time_passed = (datetime.utcnow() - self.started_at).total_seconds()
+            time_passed = (datetime.now(timezone.utc) - self.make_timezone_aware(self.started_at)).total_seconds()
             return max(self.duration - time_passed, 0)
         return self.duration
 
     def get_end_time(self):
-        # Calculate the end time based on the start time and duration
-        return self.started_at + timedelta(seconds=self.duration)
+        # Ensure started_at is timezone-aware in UTC
+        return self.make_timezone_aware(self.started_at) + timedelta(seconds=self.duration)
 
     def is_active(self):
         # Check if the challenge is still active by comparing current time with end time
-        return datetime.utcnow() < self.get_end_time()
+        return datetime.now(timezone.utc) < self.get_end_time()
+
+
+    def has_ended(self):
+        # Check if the challenge has ended and update the ended status
+        if datetime.now(timezone.utc) >= self.get_end_time():
+            self.ended = True
+            return True
+        return False
 
     def get_winner(self):
         # Find the participant with the highest progress
@@ -140,6 +147,15 @@ class Challenge(db.Model):
         # Assuming the 'progress' field is the determining factor
         winner = max(self.participants, key=lambda p: p.progress)
         return winner
+
+    @staticmethod
+    def make_timezone_aware(dt):
+        # Convert a naive datetime to timezone-aware if it isn’t already
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt
+
+
 
 class ChallengeParticipant(db.Model):
     __tablename__ = 'challenge_participant'
@@ -155,4 +171,5 @@ class ChallengeParticipant(db.Model):
 
     # Relationship to the challenge with a unique backref name
     challenge = db.relationship('Challenge', backref='participants_in_challenge')
+
 

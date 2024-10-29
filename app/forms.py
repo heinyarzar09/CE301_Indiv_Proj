@@ -155,7 +155,7 @@ class AddCreditsForm(FlaskForm):
 
 class ChallengeForm(FlaskForm):
     name = StringField('Challenge Name', validators=[DataRequired(), Length(min=2, max=100)])
-    icon = FileField('Challenge Icon', validators=[FileAllowed(['jpg', 'png', 'gif'])])
+    icon = FileField('Challenge Icon', validators=[DataRequired(), FileAllowed(['jpg', 'png', 'gif'])])
     credits_required = IntegerField('Credits Required', validators=[DataRequired()])
     days = IntegerField('Days', default=0)
     hours = IntegerField('Hours', default=0)

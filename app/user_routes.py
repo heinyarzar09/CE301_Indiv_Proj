@@ -487,14 +487,14 @@ def create_challenge():
         else:
             icon_filename = 'default_icon.png'
 
-        # Create new challenge and set the start time to now
+        # Create new challenge and set the start time to current time in UTC
         challenge = Challenge(
             name=form.name.data,
             icon=icon_filename,
             creator_id=current_user.id,
             credits_required=form.credits_required.data,
             duration=duration,
-            started_at=datetime.utcnow()  # Start the timer immediately when the challenge is created
+            started_at=datetime.now(timezone.utc)  # Start the timer immediately in UTC
         )
         
         db.session.add(challenge)
@@ -535,87 +535,91 @@ def save_image(form_image):
 @user.route('/join_challenge/<int:challenge_id>', methods=['POST'])
 @login_required
 def join_challenge(challenge_id):
-    form = JoinChallengeForm()
+    # Retrieve the challenge
     challenge = Challenge.query.get_or_404(challenge_id)
 
-    # Check if the user has enough credits to join the challenge
-    if current_user.credits < challenge.credits_required:
-        flash('You do not have enough credits to join this challenge.', 'danger')
-        return redirect(url_for('user.challenges'))  # Redirect to the challenges page
-
-    # Check if the user has already joined the challenge
+    # Check if the user is already a participant in the challenge
     existing_participation = ChallengeParticipant.query.filter_by(user_id=current_user.id, challenge_id=challenge_id).first()
     if existing_participation:
         flash('You have already joined this challenge.', 'info')
         return redirect(url_for('user.challenges'))
 
-    # Deduct the required credits and add the user to the challenge participants
+    # Check if the user has enough credits
+    if current_user.credits < challenge.credits_required:
+        flash('You do not have enough credits to join this challenge.', 'danger')
+        return redirect(url_for('user.challenges'))
+
+    # Deduct credits and add user as a participant
     current_user.credits -= challenge.credits_required
-    participant = ChallengeParticipant(
-        user_id=current_user.id,
-        challenge_id=challenge_id,
-        wagered_credits=challenge.credits_required
-    )
+    participant = ChallengeParticipant(user_id=current_user.id, challenge_id=challenge_id, wagered_credits=challenge.credits_required)
     db.session.add(participant)
-    db.session.add(current_user)
     db.session.commit()
 
     flash(f'You have successfully joined the challenge: {challenge.name}!', 'success')
-    return redirect(url_for('user.leaderboard'))
+    return redirect(url_for('user.challenges'))
 
 
-
-@user.route('/challenges', methods=['GET'])
+@user.route('/challenges')
 @login_required
 def challenges():
-    # Fetch all challenges from the database
+    # Fetch all challenges and check their end status
     challenges = Challenge.query.all()
+    
+    # Update the 'ended' status of each challenge if the timer has expired
+    for challenge in challenges:
+        if not challenge.ended and challenge.get_end_time() <= datetime.now(timezone.utc):
+            challenge.ended = True
+            db.session.add(challenge)
+    db.session.commit()
 
-    # Filter active challenges by comparing their end time with the current time
-    active_challenges = [challenge for challenge in challenges if challenge.get_end_time() > datetime.utcnow()]
+    # Only include active challenges (not ended)
+    active_challenges = Challenge.query.filter_by(ended=False).all()
+    
+    # Get IDs of challenges the current user has joined
+    joined_challenge_ids = [p.challenge_id for p in current_user.participations]
+    
+    # Prepare data for rendering
+    challenge_data = [{
+        'id': challenge.id,
+        'name': challenge.name,
+        'credits_required': challenge.credits_required,
+        'time_remaining': max(0, (challenge.get_end_time() - datetime.now(timezone.utc)).total_seconds()),
+        'icon': challenge.icon
+    } for challenge in active_challenges]
 
-    remaining_credits = current_user.credits
-    joined_challenge_ids = [cp.challenge_id for cp in current_user.participated_challenges]
+    return render_template('challenges.html', challenges=challenge_data, joined_challenge_ids=joined_challenge_ids, remaining_credits=current_user.credits)
 
-    form = JoinChallengeForm()
 
-    return render_template('challenges.html',
-                           challenges=active_challenges,
-                           joined_challenge_ids=joined_challenge_ids,
-                           remaining_credits=remaining_credits,
-                           form=form)
+
+
 
 
 @user.route('/achievements')
 @login_required
 def achievements():
-    # Find all challenges that have ended
-    completed_challenges = Challenge.query.filter(
-        func.datetime(Challenge.started_at) + func.cast(Challenge.duration, db.Integer) <= datetime.utcnow()
-    ).all()
+    # Fetch only challenges marked as ended to avoid premature display
+    completed_challenges = Challenge.query.filter_by(ended=True).all()
 
-    # Ensure achievements are recorded permanently for the winner
     for challenge in completed_challenges:
         # Calculate total wagered credits for this challenge
         total_wagered_credits = db.session.query(
             db.func.sum(ChallengeParticipant.wagered_credits)
         ).filter_by(challenge_id=challenge.id).scalar() or 0
 
-        # Find the participant with the highest progress (the winner)
+        # Determine the winner by highest progress
         winner = ChallengeParticipant.query.filter_by(
             challenge_id=challenge.id
         ).order_by(ChallengeParticipant.progress.desc()).first()
 
-        # Check if the winner is the current user and has not yet been credited
+        # Credit the winner if applicable
         if winner and winner.user_id == current_user.id and not winner.credited:
-            # Add the total wagered credits to the winner's remaining credits
             current_user.credits += total_wagered_credits
-            winner.credited = True  # Mark as credited to prevent duplicate crediting
+            winner.credited = True
             db.session.add(current_user)
-            db.session.add(winner)  # Update credited status in ChallengeParticipant
-            db.session.commit()  # Commit changes to update credits and credited status
+            db.session.add(winner)
+            db.session.commit()
 
-            # Create a new achievement entry for the winner if not already exists
+            # Create an achievement if one does not already exist
             existing_achievement = Achievement.query.filter_by(user_id=current_user.id, challenge_id=challenge.id).first()
             if not existing_achievement:
                 new_achievement = Achievement(
@@ -626,15 +630,14 @@ def achievements():
                     completion_time=challenge.started_at + timedelta(seconds=challenge.duration)
                 )
                 db.session.add(new_achievement)
-                db.session.commit()  # Commit the new achievement
+                db.session.commit()
 
     # Retrieve all achievements for the current user to display permanently
     user_achievements = Achievement.query.filter_by(user_id=current_user.id).all()
 
-    # Prepare data for display, including fetching the challenge icon
+    # Prepare data for achievements display
     completed_challenges_data = []
     for achievement in user_achievements:
-        # Fetch the related challenge icon by challenge_id
         challenge = Challenge.query.get(achievement.challenge_id)
         completed_challenges_data.append({
             'name': achievement.challenge_name,
@@ -643,8 +646,32 @@ def achievements():
             'credits': achievement.credits_won
         })
 
-    # Render the achievements template with the user's completed achievements
     return render_template('achievements.html', completed_challenges=completed_challenges_data)
+
+
+
+
+
+
+@user.route('/challenge_history')
+@login_required
+def challenge_history():
+    # Retrieve all ended challenges that the user joined
+    joined_challenges = ChallengeParticipant.query.filter_by(user_id=current_user.id).join(Challenge).filter(
+        Challenge.ended == True
+    ).all()
+
+    # Prepare data for display
+    history_data = []
+    for participation in joined_challenges:
+        challenge = participation.challenge
+        history_data.append({
+            'name': challenge.name,
+            'completion_time': (challenge.started_at + timedelta(seconds=challenge.duration)).strftime('%Y-%m-%d %H:%M:%S'),
+            'image': challenge.icon if challenge.icon else 'default_icon.jpg'
+        })
+
+    return render_template('challenge_history.html', history_data=history_data)
 
 
 
@@ -679,14 +706,14 @@ def get_leaderboard_data():
 @user.route('/leaderboard', methods=['GET'])
 @login_required
 def leaderboard():
-    # Fetch all active challenges
-    challenges = Challenge.query.all()
+    # Fetch only active challenges (those that haven't ended)
+    active_challenges = Challenge.query.filter_by(ended=False).all()
     
     # Prepare leaderboard data
     leaderboard_data = []
-    for challenge in challenges:
+    for challenge in active_challenges:
         # Calculate time remaining
-        time_remaining = max(0, (challenge.get_end_time() - datetime.utcnow()).total_seconds())
+        time_remaining = max(0, (challenge.get_end_time() - datetime.now(timezone.utc)).total_seconds())
         
         # Sort participants by progress in descending order (for leaderboard ranking)
         sorted_participants = sorted(challenge.participants, key=lambda p: p.progress, reverse=True)
@@ -703,44 +730,53 @@ def leaderboard():
     return render_template('leaderboard.html', leaderboard_data=leaderboard_data)
 
 
+
+
+
+
 def get_challenge_winner(challenge):
-    # Assuming the ChallengeParticipant model has a 'progress' field
     # Get the participant with the highest progress in the challenge
     winner = ChallengeParticipant.query.filter_by(challenge_id=challenge.id).order_by(ChallengeParticipant.progress.desc()).first()
     
-    return winner  # This will return the participant object with the highest progress
+    return winner  # Return the participant object with the highest progress
 
 
 def end_challenge(challenge):
-    # Get the winner
-    winner = get_challenge_winner(challenge)
+    # Mark the challenge as ended
+    if not challenge.ended:
+        challenge.ended = True
+        db.session.add(challenge)
 
-    if winner:
-        # Calculate total wagered credits
-        total_wagered = sum([p.wagered_credits for p in challenge.participants])
+        # Get the winner
+        winner = get_challenge_winner(challenge)
 
-        # Award the winner with the total credits
-        winner.user.credits += total_wagered
+        if winner:
+            # Calculate total wagered credits
+            total_wagered = sum([p.wagered_credits for p in challenge.participants])
 
-        # Create a new achievement for the winner
-        achievement = Achievement(
-            challenge_name=challenge.name,
-            credits_won=total_wagered,
-            challenge_duration=challenge.duration,
-            participants=len(challenge.participants),
-            user_id=winner.user.id  # Ensure the correct user_id is set
-        )
+            # Award the winner with the total credits
+            winner.user.credits += total_wagered
+            db.session.add(winner.user)  # Save updated credits for the winner
 
-        # Append the achievement to the winner and commit to the database
-        db.session.add(achievement)
-        db.session.commit()
+            # Check if an achievement already exists for this challenge and winner
+            existing_achievement = Achievement.query.filter_by(user_id=winner.user.id, challenge_id=challenge.id).first()
 
-        # Debugging output to check if achievement is created
-        print(f"Achievement created for user {winner.user.username}: {achievement}")
+            # Create a new achievement if it doesn't already exist
+            if not existing_achievement:
+                achievement = Achievement(
+                    challenge_name=challenge.name,
+                    credits_won=total_wagered,
+                    challenge_duration=challenge.duration,
+                    participants=len(challenge.participants),
+                    user_id=winner.user.id
+                )
+                db.session.add(achievement)
+                print(f"Achievement created for user {winner.user.username}: {achievement}")
 
-    # Delete or archive the challenge (if you want to remove it entirely)
-    db.session.delete(challenge)
-    db.session.commit()
+        db.session.commit()  # Commit all changes after updates
+    else:
+        print(f"Challenge '{challenge.name}' has already ended.")
+
 
 
 
