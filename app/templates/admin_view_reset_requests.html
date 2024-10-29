@@ -1,0 +1,53 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Password Reset Requests{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Password Reset Requests</h1>
+    
+    {% if reset_requests %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Date Requested</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in reset_requests %}
+                <tr>
+                    <td>{{ request.username }}</td>
+                    <td>{{ request.email }}</td>
+                    <td>
+                        {% if request.status == 'Password changed' %}
+                            <span class="text-success">{{ request.status }}</span>
+                        {% elif request.status == 'Rejected' %}
+                            <span class="text-danger">{{ request.status }}</span>
+                        {% else %}
+                            <span class="text-warning">{{ request.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ request.date_requested }}</td>
+                    <td>
+                        {% if request.status == 'Pending' %}
+                            <a href="{{ url_for('admin.admin_reset_password', user_id=request.user_id) }}" class="btn btn-success btn-sm">Approve</a>
+                            <a href="{{ url_for('admin.reject_password_reset', request_id=request.id) }}" class="btn btn-danger btn-sm">Reject</a>
+                        {% else %}
+                            {{ request.status }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No password reset requests found.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+

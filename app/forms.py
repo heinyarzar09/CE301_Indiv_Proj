@@ -7,31 +7,27 @@ from flask_wtf.file import FileField, FileAllowed  # File fields for handling fi
 
 # Form for user registration
 class RegisterForm(FlaskForm):
-    # Username field with required data and length between 2 and 20 characters
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    # Email field with required data and email validation
     email = StringField('Email', validators=[DataRequired(), Email()])
-    # Password field with required data and minimum length of 6
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
-    # Confirm password field for password verification
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
-    # Role selection field for user or admin role
     role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
-    # Submit button for the registration form
+    admin_password = PasswordField('Admin Password')  # Only used when "Admin" role is selected
     submit = SubmitField('Sign Up')
 
-    # Custom validator to check if the username is already taken
+    # Validation for unique username
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user:
             raise ValidationError('That username is taken. Please choose a different one.')
 
-    # Custom validator to check if the email is already registered
+    # Validation for unique email
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user:
-            raise ValidationError('That email is already in use. Please choose a different one.')
-
+            raise ValidationError('That email is already registered. Please use a different one.')
+        
+        
 # Form for user login
 class LoginForm(FlaskForm):
     # Email field with required data and email validation
@@ -42,6 +38,11 @@ class LoginForm(FlaskForm):
     remember = BooleanField('Remember Me')
     # Submit button for the login form
     submit = SubmitField('Login')
+
+class ForgotPasswordForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
 
 # Form for resetting password
 class ResetPasswordForm(FlaskForm):

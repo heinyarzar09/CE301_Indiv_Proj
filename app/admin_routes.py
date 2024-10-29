@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import current_user, login_required  # Flask-Login for managing user authentication
 from app import db, bcrypt  # Importing database instance and bcrypt for password hashing
 from app.forms import ResetPasswordForm, AdminAddCreditsForm, CreditApprovalForm # Importing form for resetting passwords
-from app.models import User, Friendship, CreditRequest, AdminNotification  # Importing User model for managing user data
+from app.models import PasswordResetRequest, Post, User, Friendship, CreditRequest, AdminNotification  # Importing User model for managing user data
 
 
 
@@ -31,55 +31,77 @@ def manage_users():
     users = User.query.all()  # Query all users from the database
     return render_template('admin_manage_users.html', users=users)  # Render the manage users page for admins
 
-# Route for managing recipes
-@admin.route('/manage_recipes')
+@admin.route('/manage_posts', methods=['GET', 'POST'])
 @login_required
-def manage_recipes():
-    # Check if the current user is an admin
-    if current_user.role != 'admin':
-        flash('You do not have permission to view this page.', 'danger')  # Show error message if user is not admin
-        return redirect(url_for('user.index'))  # Redirect non-admin users to the user index page
-    # Logic to manage recipes can be added here
-    return render_template('admin_manage_recipes.html')  # Render the manage recipes page for admins
+def manage_posts():
+    # Fetch all posts to display to the admin
+    posts = Post.query.all()
 
-# Route for admin settings page
-@admin.route('/settings')
+    if request.method == 'POST':
+        # Get the post ID to delete
+        post_id = request.form.get("post_id")
+        post = Post.query.get_or_404(post_id)
+
+        # Delete the post and commit the changes
+        db.session.delete(post)
+        db.session.commit()
+
+        flash("Post deleted successfully.", "success")
+        return redirect(url_for('admin.manage_posts'))
+
+    return render_template('admin_manage_posts.html', posts=posts)
+
+# In admin_routes.py
+@admin.route('/view_password_reset_requests')
 @login_required
-def settings():
-    # Check if the current user is an admin
-    if current_user.role != 'admin':
-        flash('You do not have permission to view this page.', 'danger')  # Show error message if user is not admin
-        return redirect(url_for('user.index'))  # Redirect non-admin users to the user index page
-    return render_template('admin_settings.html')  # Render the admin settings page for admins
+def view_password_reset_requests():
+    # Fetch all password reset requests
+    reset_requests = PasswordResetRequest.query.order_by(PasswordResetRequest.date_requested.desc()).all()
+    return render_template('admin_view_reset_requests.html', reset_requests=reset_requests)
+
+@admin.route('/reject_password_reset/<int:request_id>', methods=['POST'])
+@login_required
+def reject_password_reset(request_id):
+    reset_request = PasswordResetRequest.query.get_or_404(request_id)
+    reset_request.status = "Rejected"
+    db.session.commit()
+    flash("Password reset request has been rejected.", "info")
+    return redirect(url_for('admin.view_password_reset_requests'))
+
 
 # Route for admin to reset a user's password
 @admin.route('/admin/reset_password/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def admin_reset_password(user_id):
-    user = User.query.get_or_404(user_id)  # Get the user by ID or return 404 if not found
-    form = ResetPasswordForm()  # Create an instance of the ResetPasswordForm
+    user = User.query.get_or_404(user_id)
+    form = ResetPasswordForm()
+    reset_request = PasswordResetRequest.query.filter_by(user_id=user.id, status="Pending").first()  # Get the reset request
 
-    if form.validate_on_submit():  # If the form is submitted and validated
-        # Check if password and confirm password match
+    if form.validate_on_submit():
         if form.password.data != form.confirm_password.data:
-            flash('Password and Confirm Password do not match.', 'danger')  # Show error message if passwords do not match
-        # Check if the new password is the same as the current password
+            flash('Password and Confirm Password do not match.', 'danger')
         elif bcrypt.check_password_hash(user.password, form.password.data):
-            flash('New password cannot be the same as the current password.', 'danger')  # Show error message if new password matches current password
+            flash('New password cannot be the same as the current password.', 'danger')
         else:
-            # Hash the new password and update the user's password
+            # Update password
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
             user.password = hashed_password
-            db.session.commit()  # Commit changes to the database
-            flash('Password has been updated!', 'success')  # Show success message
-            return redirect(url_for('admin.manage_users'))  # Redirect to the manage users page
+            
+            # Update reset request status to "Password changed"
+            if reset_request:
+                reset_request.status = "Password changed"
+            
+            db.session.commit()
+            flash('Password has been updated!', 'success')
+            return redirect(url_for('admin.view_password_reset_requests'))
 
-    elif form.errors:  # Handle any form validation errors
+    elif form.errors:
         for field, errors in form.errors.items():
             for error in errors:
                 flash(f"{field}: {error}", 'danger')
 
     return render_template('admin_reset_password.html', title='Reset Password', form=form, user=user)
+
 
 # Route for admin to delete a user
 @admin.route('/delete_user/<int:user_id>', methods=['POST'])

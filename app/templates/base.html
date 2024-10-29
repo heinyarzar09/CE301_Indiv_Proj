@@ -19,23 +19,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.index') }}">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('user.my_tools') }}">My Tools</a>
-                    </li>
-    
-                    <!-- Dropdown menu for recipes -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="recipesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Recipes
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="recipesDropdown">
-                            <a class="dropdown-item" href="{{ url_for('user.add_recipe') }}">Add Recipes</a>
-                            <a class="dropdown-item" href="{{ url_for('user.edit_recipe') }}">Edit Recipes</a>
-                            <a class="dropdown-item" href="{{ url_for('user.delete_recipe') }}">Delete Recipes</a>
-                            <a class="dropdown-item" href="{{ url_for('user.comment_recipes') }}">Comment on Recipes</a>
-                            <a class="dropdown-item" href="{{ url_for('user.share_recipes') }}">Share Recipes</a>
-                        </div>
-                    </li>
     
                     <!-- Dropdown menu for friends -->
                     <li class="nav-item dropdown">
@@ -55,18 +38,10 @@
                         <a class="nav-link" href="{{ url_for('user.notifications') }}">Notifications</a>
                     </li>
     
-                    <!-- Dropdown menu for shopping list -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="shoppingListDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Shopping List
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="shoppingListDropdown">
-                            <a class="dropdown-item" href="{{ url_for('user.create_shopping_list') }}">Create Shopping List</a>
-                            <a class="dropdown-item" href="{{ url_for('user.add_to_shopping_list') }}">Add to Shopping List</a>
-                            <a class="dropdown-item" href="{{ url_for('user.export_shopping_list') }}">Export Shopping List</a>
-                        </div>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user.shopping_list') }}">Shopping List</a>
                     </li>
-    
                     <!-- Dropdown for Challenges -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="challengesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -100,6 +75,8 @@
                         <div class="dropdown-menu" aria-labelledby="conversionDropdown">
                             <a class="nav-link" href="{{ url_for('user.manual_conversion_tool') }}">Manual Recipe Conversion</a>
                             <a class="nav-link" href="{{ url_for('user.automatic_conversion') }}">Automatic Recipe Conversion</a>
+                            <a class="nav-link" href="{{ url_for('user.my_tools') }}">My Tools</a>
+                            
                         </div>
                     </li>
 

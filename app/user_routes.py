@@ -3,8 +3,8 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
 from app import db, bcrypt
-from app.forms import RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm, CreditRequestForm
-from app.models import User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant, db, CreditRequest, AdminNotification
+from app.forms import ForgotPasswordForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm, CreditRequestForm
+from app.models import PasswordResetRequest, ShoppingList, User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant, db, CreditRequest, AdminNotification
 from app.utils import convert_measurement, process_recipe, get_all_users_except_current, get_friends_for_user, get_incoming_friend_requests, get_outgoing_friend_requests, get_incoming_friend_requests, get_recent_follows
 from app.forms import AchievementTrackingForm, ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm, JoinChallengeForm 
 from datetime import datetime, timedelta, timezone
@@ -65,18 +65,55 @@ def register():
             elif existing_user_by_email:
                 flash('That email is already in use. Please choose a different one.', 'danger')
             else:
+                # Check if the user selected "Admin" and validate admin password
+                if form.role.data == 'admin':
+                    special_admin_password = "123456"  # Admin password 
+                    if form.admin_password.data != special_admin_password:
+                        flash('Invalid admin password. Please try again.', 'danger')
+                        return render_template('register.html', title='Register', form=form)
+                
                 # Hash the password and create a new user
                 hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-                new_user = User(username=form.username.data, email=form.email.data, password=hashed_password, role=form.role.data)
+                new_user = User(
+                    username=form.username.data,
+                    email=form.email.data,
+                    password=hashed_password,
+                    role=form.role.data
+                )
                 db.session.add(new_user)
                 db.session.commit()
                 flash('Your account has been created! You are now able to log in', 'success')
                 return redirect(url_for('user.login'))
+    
     elif form.errors:  # Handle any form validation errors
         for field, errors in form.errors.items():
             for error in errors:
                 flash(f"{error}", 'danger')
+    
     return render_template('register.html', title='Register', form=form)
+
+
+# In user_routes.py
+@user.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    form = ForgotPasswordForm()  # A form with fields for username and email
+    
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data, email=form.email.data).first()
+        
+        if user:
+            # Create a new password reset request
+            reset_request = PasswordResetRequest(user_id=user.id, username=user.username, email=user.email)
+            db.session.add(reset_request)
+            db.session.commit()
+            flash('Your password reset request has been submitted.', 'success')
+        else:
+            flash('No user found with the provided details.', 'danger')
+            
+        return redirect(url_for('user.login'))
+    
+    return render_template('forgot_password.html', form=form)
+
 
 # Route for user logout
 @user.route('/logout')
@@ -233,12 +270,7 @@ def list_users():
     users = User.query.all()
     return render_template('list_users.html', users=users)
 
-# Helper function to save the image
-def save_image(image_data):
-    filename = secure_filename(image_data.filename)
-    image_path = os.path.join(current_app.root_path, 'static/uploads', filename)
-    image_data.save(image_path)
-    return filename
+
 
 # Route to handle the post sharing
 
@@ -481,9 +513,9 @@ def create_challenge():
         # Calculate duration in seconds
         duration = (form.days.data * 86400) + (form.hours.data * 3600) + (form.minutes.data * 60) + form.seconds.data
 
-        # Handle file upload
+        # Handle file upload, specifying the folder as 'challenge'
         if form.icon.data:
-            icon_filename = save_image(form.icon.data)
+            icon_filename = save_image(form.icon.data, folder='challenges')  # Save to 'static/challenge'
         else:
             icon_filename = 'default_icon.png'
 
@@ -508,27 +540,32 @@ def create_challenge():
 
 
 # Function to save images (like post images, challenge icons, or payment proofs)
+
 def save_image(form_image, folder='uploads'):
     try:
-        # Generate a random filename
+        # Generate a random filename to avoid duplicates
         random_hex = secrets.token_hex(8)
         _, f_ext = os.path.splitext(form_image.filename)
         image_filename = random_hex + f_ext
         
-        # Determine the folder path
+        # Construct folder path based on the specified folder (e.g., static/challenge)
         folder_path = os.path.join(current_app.root_path, 'static', folder)
         os.makedirs(folder_path, exist_ok=True)  # Ensure the directory exists
         
         # Full image path
         image_path = os.path.join(folder_path, image_filename)
 
-        # Resize the image if needed
+        # Debugging print statements to confirm paths
+        print(f"Folder Path: {folder_path}")
+        print(f"Image Path: {image_path}")
+
+        # Resize and save the image
         output_size = (200, 200)
         img = Image.open(form_image)
         img.thumbnail(output_size)
         img.save(image_path)
 
-        return image_filename
+        return image_filename  # Return filename to be saved in the database
 
     except Exception as e:
         print(f"Error saving image: {e}")
@@ -823,28 +860,57 @@ def add_credit_status():
 
 
 
+# Route to view shopping list
+@user.route('/shopping_list', methods=['GET', 'POST'])
+@login_required
+def shopping_list():
+    # Fetch user shopping list items
+    items = ShoppingList.query.filter_by(user_id=current_user.id).all()
+
+    if request.method == 'POST':
+        # Add a new item
+        item_name = request.form.get('item_name')
+        quantity = request.form.get('quantity')
+        
+        new_item = ShoppingList(user_id=current_user.id, item_name=item_name, quantity=quantity)
+        db.session.add(new_item)
+        db.session.commit()
+        flash('Item added to your shopping list!', 'success')
+        return redirect(url_for('user.shopping_list'))
+    
+    return render_template('shopping_list.html', items=items)
+
+# Route to mark item as completed
+@user.route('/shopping_list/complete/<int:item_id>', methods=['POST'])
+@login_required
+def complete_item(item_id):
+    item = ShoppingList.query.get_or_404(item_id)
+    if item.user_id != current_user.id:
+        abort(403)  # Unauthorized access
+    
+    item.completed = not item.completed  # Toggle completion status
+    db.session.commit()
+    return redirect(url_for('user.shopping_list'))
+
+# Route to delete item
+@user.route('/shopping_list/delete/<int:item_id>', methods=['POST'])
+@login_required
+def delete_item(item_id):
+    item = ShoppingList.query.get_or_404(item_id)
+    if item.user_id != current_user.id:
+        abort(403)
+    
+    db.session.delete(item)
+    db.session.commit()
+    flash('Item removed from shopping list!', 'info')
+    return redirect(url_for('user.shopping_list'))
+
+
+
 
 
 # Placeholder routes for future features
-@user.route('/add_recipe')
-@login_required
-def add_recipe():
-    return render_template('placeholder.html', feature="Add Recipes")
-
-@user.route('/edit_recipe')
-@login_required
-def edit_recipe():
-    return render_template('placeholder.html', feature="Edit Recipes")
-
-@user.route('/delete_recipe')
-@login_required
-def delete_recipe():
-    return render_template('placeholder.html', feature="Delete Recipes")
-
-@user.route('/share_recipes')
-@login_required
-def share_recipes():
-    return render_template('placeholder.html', feature="Share Recipes")
+ 
 
 @user.route('/comment_recipes')
 @login_required

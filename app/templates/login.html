@@ -22,12 +22,11 @@
             {{ form.password(class="form-control") }}  {# Render the password input field with Bootstrap styling #}
         </div>
 
-        <!-- Form group for the remember me checkbox -->
+        <!-- Forgot Password link -->
         <div class="form-group">
-            {{ form.remember(class="form-check-input") }}  {# Render the checkbox for "Remember Me" with Bootstrap's form-check-input class #}
-            {{ form.remember.label(class="form-check-label") }}  {# Render the label for the "Remember Me" checkbox with Bootstrap styling #}
+            <a href="{{ url_for('user.forgot_password') }}">Forgot Password?</a>
         </div>
-
+        
         <!-- Submit button for the login form -->
         <div class="form-group">
             {{ form.submit(class="btn btn-primary") }}  {# Render the submit button with Bootstrap's primary button styling #}

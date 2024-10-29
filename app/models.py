@@ -21,7 +21,7 @@ class User(db.Model, UserMixin):
     conversion_tool_uses = db.Column(db.Integer, default=0)
 
     # Credits for creating/joining challenges
-    credits = db.Column(db.Integer, default=100)
+    credits = db.Column(db.Integer, default=0)
 
     # Relationship to tools, posts, and challenges
     tools = db.relationship('Tool', backref='owner', lazy=True, cascade="all, delete-orphan")
@@ -36,6 +36,19 @@ class User(db.Model, UserMixin):
     # New relationship to achievements
     achievements = db.relationship('Achievement', backref='user', lazy=True, cascade="all, delete-orphan")
 
+# In your models.py file
+class PasswordResetRequest(db.Model):
+    __tablename__ = 'password_reset_request'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Link to user requesting reset
+    username = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    status = db.Column(db.String(20), default='Pending')  # "Pending", "Approved", or "Rejected"
+    date_requested = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relationship to User
+    user = db.relationship('User', backref='reset_requests')
 
 
 # Define the Tool model which stores information about users' tools
@@ -61,12 +74,16 @@ class Achievement(db.Model):
 class Post(db.Model):
     __tablename__ = 'post'
     
-    id = db.Column(db.Integer, primary_key=True)  # Unique ID for each post
-    image_file = db.Column(db.String(100), nullable=False)  # Path to the image associated with the post
-    message = db.Column(db.Text, nullable=False)  # Message associated with the post
-    date_posted = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())  # Date when the post was created
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Foreign key linking the post to the user who created it
-    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=True)  # Optional foreign key to link the post to a challenge
+    id = db.Column(db.Integer, primary_key=True)
+    image_file = db.Column(db.String(100), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=True)
+
+    # Relationship to user
+    user = db.relationship('User', backref='user_posts')
+
 
 
 # Define the Friendship model to represent the relationship between users (user friendships)
@@ -172,14 +189,14 @@ class CreditRequest(db.Model):
     __tablename__ = 'credit_request'
     
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     status = db.Column(db.String(20), default='Pending')
     proof_image = db.Column(db.String(200), nullable=False)
     credits_requested = db.Column(db.Integer, nullable=False)
     date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationship to user
-    user = db.relationship('User', backref='credit_requests')
+    user = db.relationship('User', backref=db.backref('credit_requests', passive_deletes=True))
 
     def __init__(self, user_id, proof_image, credits_requested):
         self.user_id = user_id
@@ -216,3 +233,14 @@ class AdminNotification(db.Model):
     # Relationship to CreditRequest
     credit_request = db.relationship('CreditRequest', backref='notifications')
 
+class ShoppingList(db.Model):
+    __tablename__ = 'shopping_list'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    item_name = db.Column(db.String(100), nullable=False)
+    quantity = db.Column(db.String(50), nullable=True)
+    completed = db.Column(db.Boolean, default=False)
+    
+    # Relationship to User
+    user = db.relationship('User', backref='shopping_lists')
