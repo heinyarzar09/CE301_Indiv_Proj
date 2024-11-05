@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Withdrawal Status</h2>
+    {% if withdrawals %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date Requested</th>
+                    <th>Credits Requested</th>
+                    <th>Payment Mode</th>
+                    <th>Phone Number</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for withdraw in withdrawals %}
+                <tr>
+                    <td>{{ withdraw.date_requested.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ withdraw.credits_requested }}</td>
+                    <td>{{ withdraw.payment_mode }}</td>
+                    <td>{{ withdraw.phone_number }}</td>
+                    <td>
+                        {% if withdraw.status == 'Approved' %}
+                            <span class="text-success">{{ withdraw.status }}</span>
+                        {% elif withdraw.status == 'Rejected' %}
+                            <span class="text-danger">{{ withdraw.status }}</span>
+                        {% else %}
+                            <span class="text-warning">{{ withdraw.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No withdrawal requests found.</p>
+    {% endif %}
+</div>
+{% endblock %}

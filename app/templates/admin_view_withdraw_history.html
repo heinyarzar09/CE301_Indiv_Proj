@@ -1,0 +1,51 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Withdraw Request History{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Withdraw Request History</h1>
+    {% if all_requests %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Credits Requested</th>
+                    <th>Payment Mode</th>
+                    <th>Phone Number</th>
+                    <th>Date Requested</th>
+                    <th>Status</th>
+                    <th>Date Approved/Rejected</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in all_requests %}
+                <tr>
+                    <td>{{ request.user.username }}</td>
+                    <td>{{ request.credits_requested }}</td>
+                    <td>{{ request.payment_mode }}</td>
+                    <td>{{ request.phone_number }}</td>
+                    <td>{{ request.date_requested.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        {% if request.status == 'Approved' %}
+                            <span class="text-success">{{ request.status }}</span>
+                        {% elif request.status == 'Rejected' %}
+                            <span class="text-danger">{{ request.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if request.date_approved %}
+                            {{ request.date_approved.strftime('%Y-%m-%d %H:%M:%S') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No completed withdrawal requests.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -19,17 +19,23 @@
                     <a class="nav-link" href="{{ url_for('admin.manage_users') }}">Manage Users</a>  {# Link to the Manage Users page #}
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.view_password_reset_requests') }}">Password Reset Requests</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.manage_posts') }}">Manage Posts</a>  {# Link to the Manage Recipes page #}
+                    <a class="nav-link" href="{{ url_for('admin.view_password_reset_requests') }}">Password reset requests</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('admin.credit_request_history') }}">Credit Request History</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('admin.add_user_credits') }}">Add User's Credit</a>
-                </li>                             
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.manage_withdraw_requests') }}">Manage Withdraw Requests</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.manage_posts') }}">Manage Posts</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.view_withdraw_history') }}">Withdraw Request History</a>
+                </li>      
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>  {# Link to log out from the admin account #}
                 </li>

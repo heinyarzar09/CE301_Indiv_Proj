@@ -188,3 +188,9 @@ class CreditApprovalForm(FlaskForm):
     credit_request_id = HiddenField()
     approve = BooleanField('Approve')
     submit = SubmitField('Update Status')
+
+class WithdrawForm(FlaskForm):
+    credits_requested = IntegerField('Credits to Withdraw', validators=[DataRequired(), NumberRange(min=1)])
+    payment_mode = SelectField('Payment Mode', choices=[('PayNow', 'PayNow')], validators=[DataRequired()])
+    phone_number = StringField('Phone Number (for PayNow)', validators=[DataRequired(), Length(min=8, max=15)])
+    submit = SubmitField('Request Withdrawal')

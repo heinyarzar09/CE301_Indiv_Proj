@@ -1,0 +1,43 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Manage Withdraw Requests{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Manage Withdraw Requests</h1>
+    {% if pending_requests %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Credits Requested</th>
+                    <th>Payment Mode</th>
+                    <th>Phone Number</th>
+                    <th>Date Requested</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in pending_requests %}
+                <tr>
+                    <td>{{ request.user.username }}</td>
+                    <td>{{ request.credits_requested }}</td>
+                    <td>{{ request.payment_mode }}</td>
+                    <td>{{ request.phone_number }}</td>
+                    <td>{{ request.date_requested.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.manage_withdraw_requests') }}">
+                            <input type="hidden" name="request_id" value="{{ request.id }}">
+                            <button name="action" value="approve" class="btn btn-success btn-sm">Approve</button>
+                            <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No pending withdrawal requests.</p>
+    {% endif %}
+</div>
+{% endblock %}

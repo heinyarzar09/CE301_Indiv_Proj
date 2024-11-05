@@ -67,6 +67,17 @@
                         </div>
                     </li>
 
+                    <!-- Withdrawal Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="withdrawDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Withdrawal
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="withdrawDropdown">
+                            <a class="dropdown-item" href="{{ url_for('user.request_withdraw') }}">Request Withdrawal</a>
+                            <a class="dropdown-item" href="{{ url_for('user.track_withdraw') }}">View Withdrawal Status</a>
+                        </div>
+                    </li>
+                                        
                     <!-- User Conversion -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="conversionDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

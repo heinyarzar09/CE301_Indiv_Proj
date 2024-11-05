@@ -1,9 +1,10 @@
 # Import necessary modules from Flask and other libraries
+from datetime import datetime, timezone
 from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import current_user, login_required  # Flask-Login for managing user authentication
 from app import db, bcrypt  # Importing database instance and bcrypt for password hashing
 from app.forms import ResetPasswordForm, AdminAddCreditsForm, CreditApprovalForm # Importing form for resetting passwords
-from app.models import PasswordResetRequest, Post, User, Friendship, CreditRequest, AdminNotification  # Importing User model for managing user data
+from app.models import CreditWithdrawRequest, PasswordResetRequest, Post, User, Friendship, CreditRequest, AdminNotification  # Importing User model for managing user data
 
 
 
@@ -198,3 +199,42 @@ def add_user_credits():
     
     # Render the page with pending requests
     return render_template('admin_add_user_credits.html', pending_requests=pending_requests)
+
+
+@admin.route('/manage_withdraw_requests', methods=['GET', 'POST'])
+@login_required
+def manage_withdraw_requests():
+    pending_requests = CreditWithdrawRequest.query.filter_by(status='Pending').order_by(
+        CreditWithdrawRequest.date_requested.desc()
+    ).all()
+    
+    if request.method == 'POST':
+        request_id = request.form.get('request_id')
+        action = request.form.get('action')
+        withdraw_request = CreditWithdrawRequest.query.get_or_404(request_id)
+
+        if action == 'approve':
+            withdraw_request.status = 'Approved'
+            withdraw_request.date_approved = datetime.now(timezone.utc)
+            withdraw_request.user.credits -= withdraw_request.credits_requested
+            flash(f"Approved withdrawal of {withdraw_request.credits_requested} credits for user {withdraw_request.user.username}.", 'success')
+        elif action == 'reject':
+            withdraw_request.status = 'Rejected'
+            flash(f"Rejected withdrawal request for user {withdraw_request.user.username}.", 'danger')
+        
+        db.session.commit()
+        return redirect(url_for('admin.manage_withdraw_requests'))
+    
+    return render_template('admin_manage_withdraw_requests.html', pending_requests=pending_requests)
+
+
+# Route to view withdrawal history
+@admin.route('/view_withdraw_history')
+@login_required
+def view_withdraw_history():
+    # Only retrieve approved or rejected requests and order them by date_requested descending
+    all_requests = CreditWithdrawRequest.query.filter(
+        CreditWithdrawRequest.status.in_(['Approved', 'Rejected'])
+    ).order_by(CreditWithdrawRequest.date_requested.desc()).all()
+    
+    return render_template('admin_view_withdraw_history.html', all_requests=all_requests)

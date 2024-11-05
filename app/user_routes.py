@@ -3,8 +3,8 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request,
 from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
 from app import db, bcrypt
-from app.forms import ForgotPasswordForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm, CreditRequestForm
-from app.models import PasswordResetRequest, PostLike, ShoppingList, User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant, db, CreditRequest, AdminNotification
+from app.forms import ForgotPasswordForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm, CreditRequestForm, WithdrawForm
+from app.models import CreditWithdrawRequest, PasswordResetRequest, PostLike, ShoppingList, User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant, db, CreditRequest, AdminNotification
 from app.utils import convert_measurement, process_recipe, get_all_users_except_current, get_friends_for_user, get_incoming_friend_requests, get_outgoing_friend_requests, get_incoming_friend_requests, get_recent_follows
 from app.forms import AchievementTrackingForm, ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm, JoinChallengeForm 
 from datetime import datetime, timedelta, timezone
@@ -865,11 +865,6 @@ def add_credits():
     
     return render_template('add_credits.html', form=form)
 
-
-
-
-
-
 @user.route('/add_credit_status')
 @login_required
 def add_credit_status():
@@ -877,6 +872,31 @@ def add_credit_status():
     credit_requests = CreditRequest.query.filter_by(user_id=current_user.id).order_by(CreditRequest.date_submitted.desc()).all()
     return render_template('add_credit_status.html', credit_requests=credit_requests)
 
+@user.route('/withdraw', methods=['GET', 'POST'])
+@login_required
+def request_withdraw():
+    form = WithdrawForm()
+    if form.validate_on_submit():
+        if current_user.credits < form.credits_requested.data:
+            flash('Insufficient credits for withdrawal.', 'danger')
+        else:
+            withdraw_request = CreditWithdrawRequest(
+                user_id=current_user.id,
+                credits_requested=form.credits_requested.data,
+                payment_mode=form.payment_mode.data,
+                phone_number=form.phone_number.data
+            )
+            db.session.add(withdraw_request)
+            db.session.commit()
+            flash('Withdrawal request submitted successfully.', 'success')
+            return redirect(url_for('user.track_withdraw'))
+    return render_template('withdraw.html', form=form)
+
+@user.route('/track_withdraw')
+@login_required
+def track_withdraw():
+    withdrawals = CreditWithdrawRequest.query.filter_by(user_id=current_user.id).all()
+    return render_template('track_withdraw.html', withdrawals=withdrawals)
 
 
 # Route to view shopping list
