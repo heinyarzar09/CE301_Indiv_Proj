@@ -361,20 +361,40 @@ def view_posts():
 @user.route('/notifications')
 @login_required
 def notifications():
-    # Get incoming friend requests (where the current user is the recipient)
+    # Friend request notifications
     incoming_requests = Friendship.query.filter_by(friend_id=current_user.id, status='pending').all()
-
-    # Get outgoing friend requests (where the current user is the sender)
     outgoing_requests = Friendship.query.filter_by(user_id=current_user.id, status='pending').all()
-
-    # Get recent follows (accepted friend requests)
-    recent_follows = Friendship.query.filter_by(user_id=current_user.id, status='accepted')\
+    recent_follows = Friendship.query.filter_by(user_id=current_user.id, status='accepted') \
                                      .order_by(Friendship.date_created.desc()).limit(10).all()
 
-    return render_template('notifications.html', 
-                           incoming_requests=incoming_requests, 
-                           outgoing_requests=outgoing_requests, 
-                           recent_follows=recent_follows)
+    # Challenge notifications
+    new_challenges = Challenge.query.filter(Challenge.started_at > current_user.last_login).all()
+    won_challenges = ChallengeParticipant.query.filter_by(user_id=current_user.id, credited=True).all()
+    
+    # Payment notifications (assuming you have a way to track these)
+    credited_payments = CreditRequest.query.filter_by(user_id=current_user.id, status='Approved').all()
+    rejected_payments = CreditRequest.query.filter_by(user_id=current_user.id, status='Rejected').all()
+
+    # Withdrawal notifications
+    approved_withdrawals = CreditWithdrawRequest.query.filter_by(user_id=current_user.id, status='Approved').all()
+    rejected_withdrawals = CreditWithdrawRequest.query.filter_by(user_id=current_user.id, status='Rejected').all()
+
+
+    return render_template(
+        'notifications.html',
+        incoming_requests=incoming_requests,
+        outgoing_requests=outgoing_requests,
+        recent_follows=recent_follows,
+        new_challenges=new_challenges,
+        won_challenges=won_challenges,
+        credited_payments=credited_payments,
+        rejected_payments=rejected_payments,
+        approved_withdrawals=approved_withdrawals,
+        rejected_withdrawals=rejected_withdrawals
+    )
+
+
+
 
 @user.route('/like_post/<int:post_id>', methods=['POST'])
 @login_required
@@ -524,6 +544,38 @@ def manage_friends():
 
 
 
+# @user.route('/create_challenge', methods=['GET', 'POST'])
+# @login_required
+# def create_challenge():
+#     form = ChallengeForm()
+#     if form.validate_on_submit():
+#         # Calculate duration in seconds
+#         duration = (form.days.data * 86400) + (form.hours.data * 3600) + (form.minutes.data * 60) + form.seconds.data
+
+#         # Handle file upload, specifying the folder as 'challenge'
+#         if form.icon.data:
+#             icon_filename = save_image(form.icon.data, folder='challenges')  # Save to 'static/challenge'
+#         else:
+#             icon_filename = 'default_icon.png'
+
+#         # Create new challenge and set the start time to current time in UTC
+#         challenge = Challenge(
+#             name=form.name.data,
+#             icon=icon_filename,
+#             creator_id=current_user.id,
+#             credits_required=form.credits_required.data,
+#             duration=duration,
+#             started_at=datetime.now(timezone.utc)  # Start the timer immediately in UTC
+#         )
+        
+#         db.session.add(challenge)
+#         db.session.commit()
+#         flash('Challenge created successfully!', 'success')
+#         return redirect(url_for('user.challenges'))
+    
+#     return render_template('create_challenge.html', form=form)
+
+
 @user.route('/create_challenge', methods=['GET', 'POST'])
 @login_required
 def create_challenge():
@@ -538,14 +590,21 @@ def create_challenge():
         else:
             icon_filename = 'default_icon.png'
 
-        # Create new challenge and set the start time to current time in UTC
+        # Get the current time in UTC for the start time
+        started_at = datetime.now(timezone.utc)
+        
+        # Calculate end time based on start time and duration
+        end_time = started_at + timedelta(seconds=duration)
+
+        # Create new challenge and set start time and end time
         challenge = Challenge(
             name=form.name.data,
             icon=icon_filename,
             creator_id=current_user.id,
             credits_required=form.credits_required.data,
             duration=duration,
-            started_at=datetime.now(timezone.utc)  # Start the timer immediately in UTC
+            started_at=started_at,  # Start the timer immediately in UTC
+            end_time=end_time  # Calculated end time
         )
         
         db.session.add(challenge)
@@ -943,30 +1002,3 @@ def delete_item(item_id):
     db.session.commit()
     flash('Item removed from shopping list!', 'info')
     return redirect(url_for('user.shopping_list'))
-
-
-
-
-
-# Placeholder routes for future features
- 
-
-@user.route('/comment_recipes')
-@login_required
-def comment_recipes():
-    return render_template('placeholder.html', feature="Comment on Recipes")
-
-@user.route('/create_shopping_list')
-@login_required
-def create_shopping_list():
-    return render_template('placeholder.html', feature="Create Shopping List")
-
-@user.route('/add_to_shopping_list')
-@login_required
-def add_to_shopping_list():
-    return render_template('placeholder.html', feature="Add to Shopping List")
-
-@user.route('/export_shopping_list')
-@login_required
-def export_shopping_list():
-    return render_template('placeholder.html', feature="Export Shopping List")

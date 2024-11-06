@@ -1,0 +1,55 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Admin Notifications</h1>
+
+    <!-- Pending Credit Requests Section -->
+    <div class="mb-4">
+        <h3>Pending Credit Requests</h3>
+        {% if pending_credit_requests %}
+        <ul class="list-group">
+            {% for request in pending_credit_requests %}
+            <li class="list-group-item">
+                {{ request.user.username }} - {{ request.credits_requested }} credits requested
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No pending credit requests.</p>
+        {% endif %}
+    </div>
+
+    <!-- Pending Withdraw Requests Section -->
+    <div class="mb-4">
+        <h3>Pending Withdraw Requests</h3>
+        {% if pending_withdraw_requests %}
+        <ul class="list-group">
+            {% for request in pending_withdraw_requests %}
+            <li class="list-group-item">
+                {{ request.user.username }} - {{ request.credits_requested }} credits requested for withdrawal
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No pending withdraw requests.</p>
+        {% endif %}
+    </div>
+
+    <!-- Pending Password Reset Requests Section -->
+    <div class="mb-4">
+        <h3>Pending Password Reset Requests</h3>
+        {% if pending_password_resets %}
+        <ul class="list-group">
+            {% for request in pending_password_resets %}
+            <li class="list-group-item">
+                {{ request.user.username }} - Email: {{ request.email }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No pending password reset requests.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

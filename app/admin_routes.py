@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import current_user, login_required  # Flask-Login for managing user authentication
 from app import db, bcrypt  # Importing database instance and bcrypt for password hashing
 from app.forms import ResetPasswordForm, AdminAddCreditsForm, CreditApprovalForm # Importing form for resetting passwords
-from app.models import CreditWithdrawRequest, PasswordResetRequest, Post, User, Friendship, CreditRequest, AdminNotification  # Importing User model for managing user data
+from app.models import Challenge, ChallengeParticipant, CreditWithdrawRequest, PasswordResetRequest, Post, PostLike, ShoppingList, User, Friendship, CreditRequest, AdminNotification  # Importing User model for managing user data
 
 
 
@@ -115,10 +115,36 @@ def admin_delete_user(user_id):
     try:
         user = User.query.get_or_404(user_id)
 
-        # Delete all friendships where the user is involved
-        Friendship.query.filter((Friendship.user_id == user.id) | (Friendship.friend_id == user.id)).delete()
+        # Delete or reassign all challenges created by the user
+        challenges = Challenge.query.filter_by(creator_id=user.id).all()
+        for challenge in challenges:
+            db.session.delete(challenge)  # Delete the challenge
+            # Alternatively, reassign the challenge if needed
 
-        # Optionally delete all tools belonging to the user
+        # Delete all related CreditWithdrawRequest records
+        CreditWithdrawRequest.query.filter_by(user_id=user.id).delete()
+
+        # Delete all related ChallengeParticipant records
+        ChallengeParticipant.query.filter_by(user_id=user.id).delete()
+
+        # Delete all friendships where the user is involved
+        Friendship.query.filter(
+            (Friendship.user_id == user.id) | (Friendship.friend_id == user.id)
+        ).delete()
+
+        # Delete all records in post_likes related to the user's posts or the user
+        PostLike.query.filter(
+            (PostLike.user_id == user.id) | (PostLike.post_id.in_([post.id for post in user.posts]))
+        ).delete()
+
+        # Delete all records in shopping_list related to the user
+        ShoppingList.query.filter_by(user_id=user.id).delete()
+
+        # Delete all posts made by the user
+        for post in user.posts:
+            db.session.delete(post)
+
+        # Delete all tools belonging to the user
         for tool in user.tools:
             db.session.delete(tool)
 
@@ -131,6 +157,13 @@ def admin_delete_user(user_id):
         flash(f'An error occurred while trying to delete the user: {str(e)}', 'danger')
 
     return redirect(url_for('admin.manage_users'))
+
+
+
+
+
+
+
 
 
 @admin.route('/add_credits/<int:user_id>', methods=['POST'])
@@ -238,3 +271,24 @@ def view_withdraw_history():
     ).order_by(CreditWithdrawRequest.date_requested.desc()).all()
     
     return render_template('admin_view_withdraw_history.html', all_requests=all_requests)
+
+
+@admin.route('/notifications')
+@login_required
+def admin_notifications():
+    # Ensure only admins can access this page
+    if current_user.role != 'admin':
+        flash('You do not have permission to view this page.', 'danger')
+        return redirect(url_for('user.index'))
+
+    # Fetch notifications relevant to the admin
+    pending_credit_requests = CreditRequest.query.filter_by(status='Pending').all()
+    pending_withdraw_requests = CreditWithdrawRequest.query.filter_by(status='Pending').all()
+    pending_password_resets = PasswordResetRequest.query.filter_by(status='Pending').all()
+
+    return render_template(
+        'admin_notifications.html',
+        pending_credit_requests=pending_credit_requests,
+        pending_withdraw_requests=pending_withdraw_requests,
+        pending_password_resets=pending_password_resets
+    )
