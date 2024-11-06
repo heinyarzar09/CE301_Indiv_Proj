@@ -1,0 +1,47 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Admin Notifications</h1>
+
+    <!-- Pending Credit Requests Section -->
+    <div class="mb-4">
+        <h3>Pending Credit Requests</h3>
+        {% if pending_credit_requests %}
+        <ul class="list-group">
+            {% for request in pending_credit_requests %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ request.user.username }} - {{ request.credits_requested }} credits
+                <div>
+                    <a href="{{ url_for('admin.approve_credit_request', request_id=request.id) }}" class="btn btn-success btn-sm">Approve</a>
+                    <a href="{{ url_for('admin.reject_credit_request', request_id=request.id) }}" class="btn btn-danger btn-sm">Reject</a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No pending credit requests.</p>
+        {% endif %}
+    </div>
+
+    <!-- Pending Withdraw Requests Section -->
+    <div class="mb-4">
+        <h3>Pending Withdraw Requests</h3>
+        {% if pending_withdraw_requests %}
+        <ul class="list-group">
+            {% for request in pending_withdraw_requests %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ request.user.username }} - {{ request.credits_requested }} credits
+                <div>
+                    <a href="{{ url_for('admin.approve_withdraw_request', request_id=request.id) }}" class="btn btn-success btn-sm">Approve</a>
+                    <a href="{{ url_for('admin.reject_withdraw_request', request_id=request.id) }}" class="btn btn-danger btn-sm">Reject</a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No pending withdraw requests.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

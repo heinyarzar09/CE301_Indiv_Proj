@@ -46,7 +46,7 @@
     </div>
 
     <!-- Recently Followed Section -->
-    <div>
+    <div class="mb-4">
         <h3>Recently Followed</h3>
         {% if recent_follows %}
         <ul class="list-group">
@@ -61,5 +61,96 @@
         {% endif %}
     </div>
 
+    <!-- New Challenges Section -->
+    <div class="mb-4">
+        <h3>New Challenges</h3>
+        {% if new_challenges %}
+        <ul class="list-group">
+            {% for challenge in new_challenges %}
+            <li class="list-group-item">
+                New challenge "{{ challenge.name }}" added on {{ challenge.started_at.strftime('%b %d, %Y') }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No new challenges.</p>
+        {% endif %}
+    </div>
+    
+    <!-- Won Challenges Section -->
+    <div class="mb-4">
+        <h3>Won Challenges</h3>
+        {% if won_challenges %}
+        <ul class="list-group">
+            {% for challenge in won_challenges %}
+            <li class="list-group-item">
+                You won the challenge "{{ challenge.challenge.name }}"!
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No won challenges.</p>
+        {% endif %}
+    </div>
+
+    <!-- Payment Notifications Section -->
+    <div class="mb-4">
+        <h3>Payment Notifications</h3>
+        <h5>Credited Payments</h5>
+        {% if credited_payments %}
+        <ul class="list-group">
+            {% for payment in credited_payments %}
+            <li class="list-group-item">
+                Your payment request for {{ payment.credits_requested }} credits was approved.
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No credited payments.</p>
+        {% endif %}
+
+        <h5>Rejected Payments</h5>
+        {% if rejected_payments %}
+        <ul class="list-group">
+            {% for payment in rejected_payments %}
+            <li class="list-group-item">
+                Your payment request for {{ payment.credits_requested }} credits was rejected.
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No rejected payments.</p>
+        {% endif %}
+    </div>
+
+    <!-- Withdrawal Notifications -->
+    <div class="mb-4">
+        <h3>Withdrawal Notifications</h3>
+        {% if approved_withdrawals %}
+        <h4>Approved Withdrawals</h4>
+        <ul class="list-group">
+            {% for withdraw in approved_withdrawals %}
+            <li class="list-group-item">
+                Your withdrawal request of {{ withdraw.credits_requested }} credits has been approved.
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        
+        {% if rejected_withdrawals %}
+        <h4>Rejected Withdrawals</h4>
+        <ul class="list-group">
+            {% for withdraw in rejected_withdrawals %}
+            <li class="list-group-item">
+                Your withdrawal request of {{ withdraw.credits_requested }} credits has been rejected.
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        
+        {% if not approved_withdrawals and not rejected_withdrawals %}
+        <p>No withdrawal notifications.</p>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

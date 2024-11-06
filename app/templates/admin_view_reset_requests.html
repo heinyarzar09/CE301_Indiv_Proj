@@ -34,8 +34,13 @@
                     <td>{{ request.date_requested }}</td>
                     <td>
                         {% if request.status == 'Pending' %}
+                            <!-- Approve Button -->
                             <a href="{{ url_for('admin.admin_reset_password', user_id=request.user_id) }}" class="btn btn-success btn-sm">Approve</a>
-                            <a href="{{ url_for('admin.reject_password_reset', request_id=request.id) }}" class="btn btn-danger btn-sm">Reject</a>
+                            
+                            <!-- Reject Form -->
+                            <form action="{{ url_for('admin.reject_password_reset', request_id=request.id) }}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
                         {% else %}
                             {{ request.status }}
                         {% endif %}
@@ -49,5 +54,3 @@
     {% endif %}
 </div>
 {% endblock %}
-
-

@@ -11,6 +11,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     role = db.Column(db.String(10), nullable=False, default='user')
+    date_created = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
     # Tracking user activity metrics
     completed_recipes = db.Column(db.Integer, default=0)
@@ -19,6 +20,7 @@ class User(db.Model, UserMixin):
     friends_connected = db.Column(db.Integer, default=0)
     shopping_lists_created = db.Column(db.Integer, default=0)
     conversion_tool_uses = db.Column(db.Integer, default=0)
+    last_login = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Credits for creating/joining challenges
     credits = db.Column(db.Integer, default=0)
@@ -48,7 +50,7 @@ class PasswordResetRequest(db.Model):
     date_requested = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     # Relationship to User
-    user = db.relationship('User', backref='reset_requests')
+    user = db.relationship('User', backref=db.backref('reset_requests', cascade="all, delete-orphan"))
 
 
 # Define the Tool model which stores information about users' tools
@@ -78,7 +80,8 @@ class Post(db.Model):
     image_file = db.Column(db.String(100), nullable=False)
     message = db.Column(db.Text, nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    # post_id = db.Column(db.Integer, db.ForeignKey('post.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=True)
 
     # Relationship to user
@@ -127,6 +130,7 @@ class Challenge(db.Model):
     credits_required = db.Column(db.Integer, nullable=False)
     duration = db.Column(db.Integer, nullable=False)  # Duration in seconds
     started_at = db.Column(db.DateTime, nullable=False)  # Start time of the challenge
+    end_time = db.Column(db.DateTime, nullable=False)
     ended = db.Column(db.Boolean, default=False)  # Field to mark if the challenge has ended
 
     # Relationship to participants
@@ -180,21 +184,23 @@ class Challenge(db.Model):
         return dt
 
 
-
 class ChallengeParticipant(db.Model):
     __tablename__ = 'challenge_participant'
+    
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id', ondelete='CASCADE'), nullable=False)
     wagered_credits = db.Column(db.Integer, nullable=False)
     progress = db.Column(db.Float, default=0)  # Progress for tracking in leaderboard
     date_joined = db.Column(db.DateTime, default=db.func.current_timestamp())
     credited = db.Column(db.Boolean, default=False)
+    
     # Relationship to the user participating in the challenge
     user = db.relationship('User', backref='participations')
 
     # Relationship to the challenge with a unique backref name
     challenge = db.relationship('Challenge', backref='participants_in_challenge')
+
 
 
 class CreditRequest(db.Model):
