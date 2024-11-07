@@ -130,7 +130,6 @@ class Challenge(db.Model):
     credits_required = db.Column(db.Integer, nullable=False)
     duration = db.Column(db.Integer, nullable=False)  # Duration in seconds
     started_at = db.Column(db.DateTime, nullable=False)  # Start time of the challenge
-    end_time = db.Column(db.DateTime, nullable=False)
     ended = db.Column(db.Boolean, default=False)  # Field to mark if the challenge has ended
 
     # Relationship to participants

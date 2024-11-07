@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
+from fractions import Fraction  # Import the Fraction class
 import os, secrets
 
 
@@ -140,26 +141,56 @@ def manual_conversion_tool():
             flash(str(e), 'danger')
     return render_template('manual_conversion_tool.html', form=form, result=result)
 
+
 # Route for automatic recipe conversion based on user's tools
 @user.route('/automatic_conversion', methods=['GET', 'POST'])
 @login_required
 def automatic_conversion():
     form = RecipeConversionForm()
-    
-    # Get user's tools and populate the form choices with them
+
+    # Fetch user's tools and populate the form choices
     user_tools = Tool.query.filter_by(owner_id=current_user.id).all()
-    form.to_unit.choices = [(f"{tool.name} - {tool.unit}", f"{tool.name} - {tool.unit}") for tool in user_tools]
-    
+    form.to_unit.choices = [
+        (f"{tool.name} - {tool.unit}", f"{tool.name} ({tool.unit})") for tool in user_tools
+    ]
+
     converted_recipe = None
-    if form.validate_on_submit():  # If the form is submitted and validated
-        recipe_text = form.recipe_text.data
-        to_unit = form.to_unit.data.split(' - ')[1]  # Extract the unit part from the user's tool
-        try:
-            # Perform the recipe conversion and generate the result
-            converted_recipe = process_recipe(recipe_text, to_unit, current_user.id)
-        except ValueError as e:
-            flash(str(e), 'danger')
+    if form.validate_on_submit():  # Check if the form is submitted and valid
+        recipe_text = form.recipe_text.data.strip()  # Strip whitespace from the recipe text
+        to_unit = form.to_unit.data.split(' - ')[1]  # Extract the unit part from the user's tool selection
+
+        if not recipe_text:
+            flash("Please provide a recipe text for conversion.", 'warning')
+        else:
+            try:
+                # Convert decimals in the recipe text to fractions before conversion
+                recipe_text = convert_decimals_to_fractions(recipe_text)
+
+                # Attempt to convert the recipe
+                converted_recipe = process_recipe(recipe_text, to_unit, current_user.id)
+                
+                if not converted_recipe:
+                    flash("The recipe could not be converted. Please check the input.", 'warning')
+            except ValueError as e:
+                flash(f"Error: {str(e)}", 'danger')
+            except Exception as e:
+                flash("An unexpected error occurred. Please try again.", 'danger')
+    
     return render_template('automatic_conversion_tool.html', form=form, converted_recipe=converted_recipe)
+
+# Helper function to convert decimals to fractions
+def convert_decimals_to_fractions(text):
+    words = text.split()
+    for i, word in enumerate(words):
+        try:
+            # Try to convert each word to a float, then to a Fraction
+            number = float(word)
+            fraction = Fraction(number).limit_denominator()  # Limit denominator to get a simplified fraction
+            if number != int(number):  # Only convert if the number is not an integer
+                words[i] = str(fraction)  # Replace the word with its fraction representation
+        except ValueError:
+            continue  # Skip words that aren't numbers
+    return ' '.join(words)
 
 # Route to manage user's tools
 @user.route('/my_tools', methods=['GET', 'POST'])
@@ -592,19 +623,15 @@ def create_challenge():
 
         # Get the current time in UTC for the start time
         started_at = datetime.now(timezone.utc)
-        
-        # Calculate end time based on start time and duration
-        end_time = started_at + timedelta(seconds=duration)
 
-        # Create new challenge and set start time and end time
+        # Create new challenge and set start time and duration (without end_time)
         challenge = Challenge(
             name=form.name.data,
             icon=icon_filename,
             creator_id=current_user.id,
             credits_required=form.credits_required.data,
             duration=duration,
-            started_at=started_at,  # Start the timer immediately in UTC
-            end_time=end_time  # Calculated end time
+            started_at=started_at  # Start the timer immediately in UTC
         )
         
         db.session.add(challenge)
@@ -613,6 +640,7 @@ def create_challenge():
         return redirect(url_for('user.challenges'))
     
     return render_template('create_challenge.html', form=form)
+
 
 
 
