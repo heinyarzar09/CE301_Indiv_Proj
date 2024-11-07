@@ -1,7 +1,7 @@
 # Import necessary modules from Flask-WTF and WTForms
 from flask_wtf import FlaskForm  # Base class for creating forms in Flask
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField, IntegerField, FileField, HiddenField # Different types of form fields
-from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange, Optional  # Validators for form fields
+from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange, Optional, Regexp  # Validators for form fields
 from app.models import User, Tool, Challenge  # Import models for validation
 from flask_wtf.file import FileField, FileAllowed  # File fields for handling file uploads
 
@@ -9,7 +9,17 @@ from flask_wtf.file import FileField, FileAllowed  # File fields for handling fi
 class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+    password = PasswordField(
+    'Password',
+    validators=[
+        DataRequired(),
+        Length(min=12, message="Password must be at least 12 characters long."),
+        Regexp(
+            r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$',
+            message="Password must contain at least one uppercase letter, one number, and one special character."
+                )
+            ]
+        )
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
     role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
     admin_password = PasswordField('Admin Password')  # Only used when "Admin" role is selected

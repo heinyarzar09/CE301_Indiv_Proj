@@ -16,10 +16,17 @@
             {{ form.email(class="form-control") }}  {# Render the email input field with Bootstrap's form-control class for consistent styling #}
         </div>
 
-        <!-- Form group for the password input -->
+        <!-- Form group for the password input with toggle visibility -->
         <div class="form-group">
             {{ form.password.label(class="form-label") }}  {# Render the label for the password field #}
-            {{ form.password(class="form-control") }}  {# Render the password input field with Bootstrap styling #}
+            <div class="input-group">
+                {{ form.password(class="form-control", id="password-input") }}  {# Render the password input field #}
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility()">
+                        <i class="fa fa-eye" id="password-icon"></i>  {# Eye icon for visibility toggle #}
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Forgot Password link -->
@@ -33,4 +40,24 @@
         </div>
     </form>
 </div>
+
+<!-- JavaScript to toggle password visibility -->
+<script>
+function togglePasswordVisibility() {
+    var passwordInput = document.getElementById("password-input");
+    var passwordIcon = document.getElementById("password-icon");
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";  // Show the password
+        passwordIcon.classList.remove("fa-eye");
+        passwordIcon.classList.add("fa-eye-slash");
+    } else {
+        passwordInput.type = "password";  // Hide the password
+        passwordIcon.classList.remove("fa-eye-slash");
+        passwordIcon.classList.add("fa-eye");
+    }
+}
+</script>
+
+<!-- Include Font Awesome for the eye icon -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}  {# End of the content block #}
