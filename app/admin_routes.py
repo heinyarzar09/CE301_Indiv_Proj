@@ -1,4 +1,3 @@
-# Import necessary modules from Flask and other libraries
 from datetime import datetime, timezone
 from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import current_user, login_required  # Flask-Login for managing user authentication
@@ -7,9 +6,9 @@ from app.forms import ResetPasswordForm, AdminAddCreditsForm, CreditApprovalForm
 from app.models import Challenge, ChallengeParticipant, CreditWithdrawRequest, PasswordResetRequest, Post, PostLike, ShoppingList, User, Friendship, CreditRequest, AdminNotification  # Importing User model for managing user data
 
 
-
 # Create a blueprint for admin-related routes
 admin = Blueprint('admin', __name__)
+
 
 # Route for the admin dashboard
 @admin.route('/dashboard')
@@ -21,6 +20,7 @@ def dashboard():
         return redirect(url_for('user.index'))  # Redirect non-admin users to the user index page
     return render_template('admin_dashboard.html')  # Render the admin dashboard page for admins
 
+
 # Route for managing users
 @admin.route('/manage_users')
 @login_required
@@ -31,6 +31,7 @@ def manage_users():
         return redirect(url_for('user.index'))  # Redirect non-admin users to the user index page
     users = User.query.all()  # Query all users from the database
     return render_template('admin_manage_users.html', users=users)  # Render the manage users page for admins
+
 
 @admin.route('/manage_posts', methods=['GET', 'POST'])
 @login_required
@@ -52,6 +53,7 @@ def manage_posts():
 
     return render_template('admin_manage_posts.html', posts=posts)
 
+
 # In admin_routes.py
 @admin.route('/view_password_reset_requests')
 @login_required
@@ -59,6 +61,7 @@ def view_password_reset_requests():
     # Fetch all password reset requests
     reset_requests = PasswordResetRequest.query.order_by(PasswordResetRequest.date_requested.desc()).all()
     return render_template('admin_view_reset_requests.html', reset_requests=reset_requests)
+
 
 @admin.route('/reject_password_reset/<int:request_id>', methods=['POST'])
 @login_required
@@ -159,13 +162,6 @@ def admin_delete_user(user_id):
     return redirect(url_for('admin.manage_users'))
 
 
-
-
-
-
-
-
-
 @admin.route('/add_credits/<int:user_id>', methods=['POST'])
 @login_required
 def add_credits(user_id):
@@ -181,16 +177,12 @@ def add_credits(user_id):
     return render_template('add_credits.html', form=form, user=user)
 
 
-
-
 @admin.route('/credit_request_history')
 @login_required
 def credit_request_history():
     # Retrieve all approved and rejected credit requests
     credit_requests = CreditRequest.query.filter(CreditRequest.status.in_(['Approved', 'Rejected'])).order_by(CreditRequest.date_submitted.desc()).all()
     return render_template('admin_credit_request_history.html', credit_requests=credit_requests)
-
-
 
 
 @admin.route('/add_user_credits', methods=['GET', 'POST'])

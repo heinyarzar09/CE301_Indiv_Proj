@@ -9,17 +9,49 @@
     <p><strong>Phone Number:</strong> +65 1234 5678</p>
     <img src="{{ url_for('static', filename='payments/qr_code.png') }}" alt="QR Code" style="max-width: 150px;">
     
+    <p><strong>Conversion Rate:</strong> 1 SGD = 1000 Credits</p>
+    <p>Enter the amount in SGD that you transferred, and the equivalent credits will be calculated automatically.</p>
+
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
+        <!-- Proof of Payment -->
         <div class="form-group">
             {{ form.proof.label }}
             {{ form.proof(class="form-control-file") }}
         </div>
+
+        <!-- SGD Amount Input -->
+        <div class="form-group">
+            <label for="sgdAmount">Amount Transferred (SGD)</label>
+            <input type="number" id="sgdAmount" class="form-control" min="1" placeholder="Enter amount in SGD" required>
+        </div>
+
+        <!-- Automatically Calculated Credits Requested -->
         <div class="form-group">
             {{ form.credits_requested.label }}
-            {{ form.credits_requested(class="form-control") }}
+            {{ form.credits_requested(class="form-control", id="creditsRequested", readonly=True) }}
         </div>
+
         <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
     </form>
 </div>
+
+<script>
+    // Conversion rate: 1 SGD = 1000 Credits
+    const conversionRate = 1000;
+
+    // Get references to the SGD amount input and credits requested input
+    const sgdAmountInput = document.getElementById('sgdAmount');
+    const creditsRequestedInput = document.getElementById('creditsRequested');
+
+    // Update the credits requested when the SGD amount changes
+    sgdAmountInput.addEventListener('input', function() {
+        const sgdAmount = parseFloat(sgdAmountInput.value);
+        if (!isNaN(sgdAmount) && sgdAmount > 0) {
+            creditsRequestedInput.value = sgdAmount * conversionRate;
+        } else {
+            creditsRequestedInput.value = ''; // Clear the credits if input is invalid
+        }
+    });
+</script>
 {% endblock %}

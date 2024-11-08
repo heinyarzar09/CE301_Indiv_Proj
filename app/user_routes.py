@@ -1,4 +1,3 @@
-# Import necessary modules from Flask and other libraries
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort, current_app
 from flask_login import login_user, current_user, logout_user, login_required
 from PIL import Image
@@ -18,6 +17,7 @@ import os, secrets
 # Create a blueprint for user-related routes
 user = Blueprint('user', __name__)
 
+
 # Route for the index page (home page) of the user
 @user.route('/')
 @login_required  # Requires user login
@@ -25,6 +25,7 @@ def index():
     users = User.query.all()  # Get all users for display
     added_friend = request.args.get('added_friend')  # Get the name of the friend added, if any
     return render_template('index.html', users=users, added_friend=added_friend)
+
 
 # Route for user login
 @user.route('/login', methods=['GET', 'POST'])
@@ -48,6 +49,7 @@ def login():
             for error in errors:
                 flash(f"{error}", 'danger')
     return render_template('login.html', form=form)
+
 
 # Route for user registration
 @user.route('/register', methods=['GET', 'POST'])
@@ -123,6 +125,7 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('user.index'))
 
+
 # Route for manual unit conversion tool
 @user.route('/manual_conversion_tool', methods=['GET', 'POST'])
 @login_required
@@ -192,6 +195,7 @@ def convert_decimals_to_fractions(text):
             continue  # Skip words that aren't numbers
     return ' '.join(words)
 
+
 # Route to manage user's tools
 @user.route('/my_tools', methods=['GET', 'POST'])
 @login_required
@@ -215,6 +219,7 @@ def my_tools():
                 flash(f"{error}", 'danger')
     tools = Tool.query.filter_by(owner_id=current_user.id).all()  # Get all tools for the user
     return render_template('my_tools.html', title='My Tools', form=form, tools=tools)
+
 
 # Route to delete a tool
 @user.route('/delete_tool/<int:tool_id>', methods=['POST'])
@@ -268,10 +273,6 @@ def connect_friends():
     return render_template('connect_friends.html', users=users, friends=friends, added_friend=added_friend)
 
 
-
-
-
-
 @user.route('/add_friend/<int:friend_id>', methods=['POST'])
 @login_required
 def add_friend(friend_id):
@@ -293,8 +294,6 @@ def add_friend(friend_id):
     return redirect(url_for('user.connect_friends', added_friend=friend.username))
 
 
-
-
 @user.route('/users')
 @login_required
 def list_users():
@@ -302,14 +301,10 @@ def list_users():
     return render_template('list_users.html', users=users)
 
 
-
 # Route to handle the post sharing
-
-
 @user.route('/share_post', methods=['GET', 'POST'])
 @login_required
 def share_post():
-
 
     form = SharePostForm()
 
@@ -369,11 +364,6 @@ def share_post():
     return render_template('share_post.html', form=form)
 
 
-
-
-
-
-
 # Route to view posts from friends
 @user.route('/view_posts')
 @login_required
@@ -388,6 +378,7 @@ def view_posts():
         flash('No posts to show', 'info')
     
     return render_template('view_posts.html', posts=posts)
+
 
 @user.route('/notifications')
 @login_required
@@ -410,7 +401,6 @@ def notifications():
     approved_withdrawals = CreditWithdrawRequest.query.filter_by(user_id=current_user.id, status='Approved').all()
     rejected_withdrawals = CreditWithdrawRequest.query.filter_by(user_id=current_user.id, status='Rejected').all()
 
-
     return render_template(
         'notifications.html',
         incoming_requests=incoming_requests,
@@ -423,8 +413,6 @@ def notifications():
         approved_withdrawals=approved_withdrawals,
         rejected_withdrawals=rejected_withdrawals
     )
-
-
 
 
 @user.route('/like_post/<int:post_id>', methods=['POST'])
@@ -445,7 +433,6 @@ def like_post(post_id):
     return redirect(request.referrer or url_for('user.posts'))
 
 
-
 @user.route('/approve_friend_request/<int:request_id>', methods=['POST'])
 @login_required
 def approve_friend_request(request_id):
@@ -455,7 +442,6 @@ def approve_friend_request(request_id):
         db.session.commit()
         flash(f'You are now friends with {request.user.username}!', 'success')
     return redirect(url_for('user.notifications'))
-
 
 
 @user.route('/reject_friend_request/<int:request_id>', methods=['POST'])
@@ -513,9 +499,6 @@ def unfollow_friend(friend_id):
     return redirect(url_for('user.connect_friends'))
 
 
-
-
-
 @user.route('/block_friend/<int:friend_id>', methods=['POST'])
 @login_required
 def block_friend(friend_id):
@@ -558,7 +541,6 @@ def unblock_friend(friend_id):
     return redirect(url_for('user.manage_friends'))
 
 
-
 @user.route('/manage_friends', methods=['GET'])
 @login_required
 def manage_friends():
@@ -572,39 +554,6 @@ def manage_friends():
                         .filter(Friendship.user_id == current_user.id, Friendship.is_blocked == True).all()
 
     return render_template('manage_friends.html', friends=friends, blocked_friends=blocked_friends)
-
-
-
-# @user.route('/create_challenge', methods=['GET', 'POST'])
-# @login_required
-# def create_challenge():
-#     form = ChallengeForm()
-#     if form.validate_on_submit():
-#         # Calculate duration in seconds
-#         duration = (form.days.data * 86400) + (form.hours.data * 3600) + (form.minutes.data * 60) + form.seconds.data
-
-#         # Handle file upload, specifying the folder as 'challenge'
-#         if form.icon.data:
-#             icon_filename = save_image(form.icon.data, folder='challenges')  # Save to 'static/challenge'
-#         else:
-#             icon_filename = 'default_icon.png'
-
-#         # Create new challenge and set the start time to current time in UTC
-#         challenge = Challenge(
-#             name=form.name.data,
-#             icon=icon_filename,
-#             creator_id=current_user.id,
-#             credits_required=form.credits_required.data,
-#             duration=duration,
-#             started_at=datetime.now(timezone.utc)  # Start the timer immediately in UTC
-#         )
-        
-#         db.session.add(challenge)
-#         db.session.commit()
-#         flash('Challenge created successfully!', 'success')
-#         return redirect(url_for('user.challenges'))
-    
-#     return render_template('create_challenge.html', form=form)
 
 
 @user.route('/create_challenge', methods=['GET', 'POST'])
@@ -641,12 +590,7 @@ def create_challenge():
     
     return render_template('create_challenge.html', form=form)
 
-
-
-
-
 # Function to save images (like post images, challenge icons, or payment proofs)
-
 def save_image(form_image, folder='uploads'):
     try:
         # Generate a random filename to avoid duplicates
@@ -676,6 +620,7 @@ def save_image(form_image, folder='uploads'):
     except Exception as e:
         print(f"Error saving image: {e}")
         return None
+
 
 @user.route('/join_challenge/<int:challenge_id>', methods=['POST'])
 @login_required
@@ -735,10 +680,6 @@ def challenges():
     return render_template('challenges.html', challenges=challenge_data, joined_challenge_ids=joined_challenge_ids, remaining_credits=current_user.credits)
 
 
-
-
-
-
 @user.route('/achievements')
 @login_required
 def achievements():
@@ -794,10 +735,6 @@ def achievements():
     return render_template('achievements.html', completed_challenges=completed_challenges_data)
 
 
-
-
-
-
 @user.route('/challenge_history')
 @login_required
 def challenge_history():
@@ -818,10 +755,6 @@ def challenge_history():
 
     return render_template('challenge_history.html', history_data=history_data)
 
-
-
-
-
 def get_leaderboard_data():
     # Assuming you want to show all challenges and participants sorted by their progress
     leaderboard_data = []
@@ -841,9 +774,6 @@ def get_leaderboard_data():
                 'progress': participant.progress,
                 'wagered_credits': participant.wagered_credits
             })
-
-    # Optionally sort the leaderboard data here (if needed)
-    # You could sort across all challenges or each challenge individually
 
     return leaderboard_data
 
@@ -874,17 +804,11 @@ def leaderboard():
     # Render the leaderboard template with the leaderboard data
     return render_template('leaderboard.html', leaderboard_data=leaderboard_data)
 
-
-
-
-
-
 def get_challenge_winner(challenge):
     # Get the participant with the highest progress in the challenge
     winner = ChallengeParticipant.query.filter_by(challenge_id=challenge.id).order_by(ChallengeParticipant.progress.desc()).first()
     
     return winner  # Return the participant object with the highest progress
-
 
 def end_challenge(challenge):
     # Mark the challenge as ended
@@ -923,7 +847,6 @@ def end_challenge(challenge):
         print(f"Challenge '{challenge.name}' has already ended.")
 
 
-
 @user.route('/add_credits', methods=['GET', 'POST'])
 @login_required
 def add_credits():
@@ -952,12 +875,14 @@ def add_credits():
     
     return render_template('add_credits.html', form=form)
 
+
 @user.route('/add_credit_status')
 @login_required
 def add_credit_status():
     # Fetch the user's credit requests
     credit_requests = CreditRequest.query.filter_by(user_id=current_user.id).order_by(CreditRequest.date_submitted.desc()).all()
     return render_template('add_credit_status.html', credit_requests=credit_requests)
+
 
 @user.route('/withdraw', methods=['GET', 'POST'])
 @login_required
@@ -978,6 +903,7 @@ def request_withdraw():
             flash('Withdrawal request submitted successfully.', 'success')
             return redirect(url_for('user.track_withdraw'))
     return render_template('withdraw.html', form=form)
+
 
 @user.route('/track_withdraw')
 @login_required
@@ -1006,6 +932,7 @@ def shopping_list():
     
     return render_template('shopping_list.html', items=items)
 
+
 # Route to mark item as completed
 @user.route('/shopping_list/complete/<int:item_id>', methods=['POST'])
 @login_required
@@ -1017,6 +944,7 @@ def complete_item(item_id):
     item.completed = not item.completed  # Toggle completion status
     db.session.commit()
     return redirect(url_for('user.shopping_list'))
+
 
 # Route to delete item
 @user.route('/shopping_list/delete/<int:item_id>', methods=['POST'])

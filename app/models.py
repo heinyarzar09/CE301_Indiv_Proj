@@ -1,4 +1,3 @@
-# Import necessary modules for creating database models
 from flask_login import UserMixin  # Provides default implementations for user authentication (like is_authenticated)
 from datetime import datetime, timezone, timedelta
 from app import db  # Importing the SQLAlchemy instance for database interactions
@@ -71,7 +70,6 @@ class Achievement(db.Model):
     credits_won = db.Column(db.Integer, nullable=False)
     completion_time = db.Column(db.DateTime, nullable=False)  # Store when the achievement was completed
 
-
 # Define the Post model to store users' shared posts, such as recipe posts with images and messages
 class Post(db.Model):
     __tablename__ = 'post'
@@ -100,7 +98,6 @@ class PostLike(db.Model):
     post = db.relationship('Post', backref='likes')
     user = db.relationship('User', backref='liked_posts')
 
-
 # Define the Friendship model to represent the relationship between users (user friendships)
 class Friendship(db.Model):
     __tablename__ = 'friendship'
@@ -119,7 +116,6 @@ class Friendship(db.Model):
     friend = db.relationship('User', foreign_keys=[friend_id], backref='friends')
     # 'foreign_keys' specifies which foreign key is used for each relationship
     # 'backref' provides convenient access to friendship records and friends from the User model
-
 
 class Challenge(db.Model):
     __tablename__ = 'challenge'
@@ -182,7 +178,6 @@ class Challenge(db.Model):
             return dt.replace(tzinfo=timezone.utc)
         return dt
 
-
 class ChallengeParticipant(db.Model):
     __tablename__ = 'challenge_participant'
     
@@ -199,7 +194,6 @@ class ChallengeParticipant(db.Model):
 
     # Relationship to the challenge with a unique backref name
     challenge = db.relationship('Challenge', backref='participants_in_challenge')
-
 
 
 class CreditRequest(db.Model):

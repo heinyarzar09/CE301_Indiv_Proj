@@ -1,4 +1,3 @@
-# Import necessary modules
 import re  # Regular expressions for parsing text
 from fractions import Fraction  # Handling fractional values
 from app.models import User, Friendship

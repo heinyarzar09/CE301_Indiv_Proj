@@ -1,4 +1,3 @@
-# Import necessary modules from Flask-WTF and WTForms
 from flask_wtf import FlaskForm  # Base class for creating forms in Flask
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, TextAreaField, IntegerField, FileField, HiddenField # Different types of form fields
 from wtforms.validators import DataRequired, Length, Email, ValidationError, NumberRange, Optional, Regexp  # Validators for form fields
@@ -36,7 +35,6 @@ class RegisterForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError('That email is already registered. Please use a different one.')
-        
         
 # Form for user login
 class LoginForm(FlaskForm):
@@ -173,8 +171,6 @@ class ChallengeForm(FlaskForm):
     minutes = IntegerField('Minutes', default=0)
     seconds = IntegerField('Seconds', default=0)
     submit = SubmitField('Create Challenge')
-
-
 
 class JoinChallengeForm(FlaskForm):
     submit = SubmitField('Join Challenge')
