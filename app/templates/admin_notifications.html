@@ -1,54 +1,62 @@
 {% extends "admin_base.html" %}
 
+{% block title %}Admin Notifications{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h1>Admin Notifications</h1>
+<div class="container mt-5">
+    <h2 class="mb-4">Admin Notifications</h2>
 
-    <!-- Pending Credit Requests Section -->
+    <!-- Pending Credit Requests -->
     <div class="mb-4">
-        <h3>Pending Credit Requests</h3>
+        <h4>Pending Credit Requests</h4>
         {% if pending_credit_requests %}
-        <ul class="list-group">
-            {% for request in pending_credit_requests %}
-            <li class="list-group-item">
-                {{ request.user.username }} - {{ request.credits_requested }} credits requested
-            </li>
-            {% endfor %}
-        </ul>
+            <ul class="list-group">
+                {% for request in pending_credit_requests %}
+                    <li class="list-group-item">
+                        User: {{ request.user.username }} requested {{ request.amount }} credits.
+                        <span class="text-muted">{{ request.timestamp }}</span>
+                        <a href="{{ url_for('admin.handle_credit_request', request_id=request.id) }}" class="btn btn-sm btn-primary float-right">Review</a>
+                    </li>
+                {% endfor %}
+            </ul>
         {% else %}
-        <p>No pending credit requests.</p>
+            <p class="text-muted">No pending credit requests.</p>
         {% endif %}
     </div>
 
-    <!-- Pending Withdraw Requests Section -->
+    <!-- Pending Withdraw Requests -->
     <div class="mb-4">
-        <h3>Pending Withdraw Requests</h3>
+        <h4>Pending Withdraw Requests</h4>
         {% if pending_withdraw_requests %}
-        <ul class="list-group">
-            {% for request in pending_withdraw_requests %}
-            <li class="list-group-item">
-                {{ request.user.username }} - {{ request.credits_requested }} credits requested for withdrawal
-            </li>
-            {% endfor %}
-        </ul>
+            <ul class="list-group">
+                {% for request in pending_withdraw_requests %}
+                    <li class="list-group-item">
+                        User: {{ request.user.username }} requested to withdraw {{ request.amount }} credits.
+                        <span class="text-muted">{{ request.timestamp }}</span>
+                        <a href="{{ url_for('admin.handle_withdraw_request', request_id=request.id) }}" class="btn btn-sm btn-primary float-right">Review</a>
+                    </li>
+                {% endfor %}
+            </ul>
         {% else %}
-        <p>No pending withdraw requests.</p>
+            <p class="text-muted">No pending withdraw requests.</p>
         {% endif %}
     </div>
 
-    <!-- Pending Password Reset Requests Section -->
-    <div class="mb-4">
-        <h3>Pending Password Reset Requests</h3>
+    <!-- Pending Password Reset Requests -->
+    <div>
+        <h4>Pending Password Reset Requests</h4>
         {% if pending_password_resets %}
-        <ul class="list-group">
-            {% for request in pending_password_resets %}
-            <li class="list-group-item">
-                {{ request.user.username }} - Email: {{ request.email }}
-            </li>
-            {% endfor %}
-        </ul>
+            <ul class="list-group">
+                {% for request in pending_password_resets %}
+                    <li class="list-group-item">
+                        User: {{ request.user.username }} requested a password reset.
+                        <span class="text-muted">{{ request.timestamp }}</span>
+                        <a href="{{ url_for('admin.handle_password_reset', request_id=request.id) }}" class="btn btn-sm btn-primary float-right">Review</a>
+                    </li>
+                {% endfor %}
+            </ul>
         {% else %}
-        <p>No pending password reset requests.</p>
+            <p class="text-muted">No pending password reset requests.</p>
         {% endif %}
     </div>
 </div>

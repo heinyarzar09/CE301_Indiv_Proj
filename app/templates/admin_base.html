@@ -1,68 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">  {# Specifies the character encoding for the document #}
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  {# Ensures responsiveness on different screen sizes, especially for mobile devices #}
-    <title>{% block title %}{% endblock %}</title>  {# Placeholder for setting the page title dynamically #}
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">  {# Link to Bootstrap CSS for styling #}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> <!-- Link to custom CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&display=swap" rel="stylesheet"> <!-- Chewy font -->
+    
+    <!-- GSAP and Three.js for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">  {# Bootstrap navbar with light background color #}
-        <a class="navbar-brand" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>  {# Navbar brand link pointing to the admin dashboard #}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>  {# Collapsible button for navigation on smaller screens #}
+            <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">  {# Navbar items aligned to the right using "ml-auto" #}
+            <ul class="navbar-nav ml-auto">
+                <!-- Home Page -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.manage_users') }}">Manage Users</a>  {# Link to the Manage Users page #}
+                    <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Home</a>
                 </li>
+
+                <!-- Manage Users -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.view_password_reset_requests') }}">Password reset requests</a>
+                    <a class="nav-link" href="{{ url_for('admin.manage_users') }}">Manage Users</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.credit_request_history') }}">Credit Request History</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.add_user_credits') }}">Add User's Credit</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.manage_withdraw_requests') }}">Manage Withdraw Requests</a>
-                </li>
+
+                <!-- Manage Posts -->
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('admin.manage_posts') }}">Manage Posts</a>
                 </li>
+
+                <!-- Password Reset -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.view_withdraw_history') }}">Withdraw Request History</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('admin.admin_notifications') }}">Notifications</a>
-                </li>                
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>  {# Link to log out from the admin account #}
+                    <a class="nav-link" href="{{ url_for('admin.view_password_reset_requests') }}">Password Reset</a>
                 </li>
 
+                <!-- Credit Management Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="creditDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Credit Management
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="creditDropdown">
+                        <a class="dropdown-item" href="{{ url_for('admin.add_user_credits') }}">Add User's Credit</a>
+                        <a class="dropdown-item" href="{{ url_for('admin.credit_request_history') }}">Credit Request History</a>
+                    </div>
+                </li>
+
+                <!-- Withdrawal Management Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="withdrawDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Withdrawal Management
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="withdrawDropdown">
+                        <a class="dropdown-item" href="{{ url_for('admin.manage_withdraw_requests') }}">Manage Withdraw Requests</a>
+                        <a class="dropdown-item" href="{{ url_for('admin.view_withdraw_history') }}">Withdraw Request History</a>
+                    </div>
+                </li>
+
+                <!-- Notifications -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.admin_notifications') }}">Notifications</a>
+                </li>
+
+                <!-- Logout -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>
+                </li>
             </ul>
         </div>
     </nav>
 
     <!-- Main Content Area -->
-    <div class="container">  {# Bootstrap container for centering and adding padding to the main content #}
-        {% with messages = get_flashed_messages(with_categories=true) %}  {# Get flash messages (e.g., success or error messages) with their categories #}
-            {% if messages %}  {# Check if there are any flash messages #}
-                {% for category, message in messages %}  {# Loop through each flash message and display it #}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>  {# Display flash message with appropriate Bootstrap alert class #}
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        {% block content %}{% endblock %}  {# Placeholder for page-specific content to be inserted by child templates #}
+        {% block content %}{% endblock %}
     </div>
 
+
+    <!-- Footer Section -->
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2024 CookMaster. All rights reserved.</p>
+    </footer>
+
+    <!-- Particle Canvas for Background Animation -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- JavaScript for Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     
-    <!-- JavaScript files for Bootstrap functionality -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>  {# jQuery library for Bootstrap #}
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>  {# Popper.js for Bootstrap dropdowns and tooltips #}
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  {# Bootstrap JavaScript for interactive components #}
+    <!-- Custom Animations -->
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
 </body>
 </html>

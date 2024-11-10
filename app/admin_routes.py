@@ -10,16 +10,28 @@ from app.models import Challenge, ChallengeParticipant, CreditWithdrawRequest, P
 admin = Blueprint('admin', __name__)
 
 
-# Route for the admin dashboard
 @admin.route('/dashboard')
-@login_required  # Requires the user to be logged in
+@login_required
 def dashboard():
     # Check if the current user is an admin
     if current_user.role != 'admin':
-        flash('You do not have permission to view this page.', 'danger')  # Show error message if user is not admin
-        return redirect(url_for('user.index'))  # Redirect non-admin users to the user index page
-    return render_template('admin_dashboard.html')  # Render the admin dashboard page for admins
+        flash('You do not have permission to view this page.', 'danger')
+        return redirect(url_for('user.index'))
 
+    # Fetch recent activities without sorting
+    recent_credit_requests = CreditRequest.query.limit(5).all()
+    recent_withdraw_requests = CreditWithdrawRequest.query.limit(5).all()
+    recent_password_resets = PasswordResetRequest.query.limit(5).all()
+
+    # Combine all recent activities (order is undefined)
+    recent_activity = (
+        recent_credit_requests + recent_withdraw_requests + recent_password_resets
+    )
+
+    return render_template(
+        'admin_dashboard.html',
+        recent_activity=recent_activity
+    )
 
 # Route for managing users
 @admin.route('/manage_users')
