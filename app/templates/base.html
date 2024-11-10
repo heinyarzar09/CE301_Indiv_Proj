@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">  {# Specifies the character encoding for the document #}
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  {# Ensures the page is responsive, especially on mobile devices #}
-    <title>{% block title %}{% endblock %}</title>  {# Placeholder for setting the page title dynamically #}
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">  {# Link to Bootstrap CSS for styling #}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Roboto font link -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> <!-- Link to custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/font.css') }}">   
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&display=swap" rel="stylesheet"> <!-- Chewy font -->
+
 </head>
-<body>
+
+<body class="bg-dark text-light">
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="{{ url_for('user.index') }}">CookMaster</a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand text-neon" href="{{ url_for('user.index') }}">CookMaster</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -19,91 +25,79 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.index') }}">Home</a>
                     </li>
-    
-                    <!-- Dropdown menu for friends -->
+                    <!-- Friends Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="friendsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Friends
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="friendsDropdown">
+                        <div class="dropdown-menu dropdown-menu-dark" aria-labelledby="friendsDropdown">
                             <a class="dropdown-item" href="{{ url_for('user.connect_friends') }}">Connect with Friends</a>
                             <a class="dropdown-item" href="{{ url_for('user.manage_friends') }}">Manage Friends (Unfollow/Block)</a>
                             <a class="dropdown-item" href="{{ url_for('user.share_post') }}">Share Post</a>
                             <a class="dropdown-item" href="{{ url_for('user.view_posts') }}">View Posts</a>
                         </div>
                     </li>
-    
-                    <!-- Dropdown menu for notifications -->
+                    <!-- Notifications Link -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.notifications') }}">Notifications</a>
                     </li>
-    
-
+                    <!-- Shopping List Link -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.shopping_list') }}">Shopping List</a>
                     </li>
-                    <!-- Dropdown for Challenges -->
+                    <!-- Challenges Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="challengesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          Challenges
+                            Challenges
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="challengesDropdown">
-                          <a class="dropdown-item" href="{{ url_for('user.challenges') }}">View Challenges</a>
-                          <a class="dropdown-item" href="{{ url_for('user.leaderboard') }}">Leaderboard</a>
-                          <a class="dropdown-item" href="{{ url_for('user.challenge_history') }}">Challenge History</a>
-                          <a class="dropdown-item" href="{{ url_for('user.create_challenge') }}">Create a Challenge</a>
-                          <a class="dropdown-item" href="{{ url_for('user.achievements') }}">My Achievements</a>
+                        <div class="dropdown-menu dropdown-menu-dark" aria-labelledby="challengesDropdown">
+                            <a class="dropdown-item" href="{{ url_for('user.challenges') }}">View Challenges</a>
+                            <a class="dropdown-item" href="{{ url_for('user.leaderboard') }}">Leaderboard</a>
+                            <a class="dropdown-item" href="{{ url_for('user.challenge_history') }}">Challenge History</a>
+                            <a class="dropdown-item" href="{{ url_for('user.create_challenge') }}">Create a Challenge</a>
+                            <a class="dropdown-item" href="{{ url_for('user.achievements') }}">My Achievements</a>
                         </div>
-                      </li>
-
-                    <!-- User payments -->
+                    </li>
+                    <!-- Payments Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="paymentsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Payments
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="paymentsDropdown">
-                            <a class="nav-link" href="{{ url_for('user.add_credits') }}">Add Credits</a>
-                            <a class="nav-link" href="{{ url_for('user.add_credit_status') }}">Add Credit Status</a>
+                        <div class="dropdown-menu dropdown-menu-dark" aria-labelledby="paymentsDropdown">
+                            <a class="dropdown-item" href="{{ url_for('user.add_credits') }}">Add Credits</a>
+                            <a class="dropdown-item" href="{{ url_for('user.add_credit_status') }}">Add Credit Status</a>
                         </div>
                     </li>
-
                     <!-- Withdrawal Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="withdrawDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Withdrawal
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="withdrawDropdown">
+                        <div class="dropdown-menu dropdown-menu-dark" aria-labelledby="withdrawDropdown">
                             <a class="dropdown-item" href="{{ url_for('user.request_withdraw') }}">Request Withdrawal</a>
                             <a class="dropdown-item" href="{{ url_for('user.track_withdraw') }}">View Withdrawal Status</a>
                         </div>
                     </li>
-                                        
-                    <!-- User Conversion -->
+                    <!-- Conversion Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="conversionDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Conversion
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="conversionDropdown">
-                            <a class="nav-link" href="{{ url_for('user.manual_conversion_tool') }}">Manual Recipe Conversion</a>
-                            <a class="nav-link" href="{{ url_for('user.automatic_conversion') }}">Automatic Recipe Conversion</a>
-                            <a class="nav-link" href="{{ url_for('user.my_tools') }}">My Tools</a>
-                            
+                        <div class="dropdown-menu dropdown-menu-dark" aria-labelledby="conversionDropdown">
+                            <a class="dropdown-item" href="{{ url_for('user.manual_conversion_tool') }}">Manual Recipe Conversion</a>
+                            <a class="dropdown-item" href="{{ url_for('user.automatic_conversion') }}">Automatic Recipe Conversion</a>
+                            <a class="dropdown-item" href="{{ url_for('user.my_tools') }}">My Tools</a>
                         </div>
                     </li>
-
-
-    
+                    <!-- Logout Link -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>
                     </li>
-    
-
                     {% if current_user.role == 'admin' %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
                         </li>
                     {% endif %}
-    
                 {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.login') }}">Login</a>
@@ -115,25 +109,42 @@
             </ul>
         </div>
     </nav>
-    
-    
+
     <!-- Main content area -->
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}  {# Get any flash messages with their categories #}
+    <div class="container my-5 pt-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>  {# Display each flash message with Bootstrap styling #}
+                    <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        {% block content %}{% endblock %}  {# Placeholder for page-specific content to be inserted #}
+        {% block content %}{% endblock %}
     </div>
 
-    
-    <!-- JavaScript files for Bootstrap functionality -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>  {# jQuery library for Bootstrap #}
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>  {# Popper.js for Bootstrap dropdowns and tooltips #}
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  {# Bootstrap JavaScript for interactive components #}
+    <!-- Footer -->
+    <footer class="bg-dark text-muted text-center py-4">
+        <p>&copy; 2024 CookMaster. All rights reserved.</p>
+    </footer>
+
+    <!-- JavaScript for Bootstrap functionality -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Include GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+
+    <!-- Link to custom JS file -->
+    <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Particles.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,27 +1,44 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Friend Requests</h1>
+<div class="hero-section">
+    <canvas id="particle-canvas"></canvas> <!-- Canvas for Three.js -->
+    <div class="hero-content">
+        <h1>Welcome to CookMaster</h1>
+        <p>Your ultimate cooking assistant with social and challenge features.</p>
+        <a href="{{ url_for('user.challenges') }}" class="btn btn-neon">Explore Challenges</a>
 
-    {% if friend_requests %}
-    <ul class="list-group">
-        {% for request in friend_requests %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            {{ request.user.username }} 
-            <div>
-                <form action="{{ url_for('user.approve_friend_request', request_id=request.id) }}" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-primary btn-sm">Confirm</button>
-                </form>
-                <form action="{{ url_for('user.reject_friend_request', request_id=request.id) }}" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
+         <!-- Floating Vegetables or Cooking Utensils -->
+        <img src="{{ url_for('static', filename='images/tomato.png') }}" alt="Tomato" class="floating-veg veg1">
+        <img src="{{ url_for('static', filename='images/whisk.png') }}" alt="Whisk" class="floating-veg veg2">
+        <img src="{{ url_for('static', filename='images/frying_pan.png') }}" alt="Frying_Pan" class="floating-veg veg3">
+    </div>
+</div>
+
+<div class="container features-section my-5">
+    <h2 class="text-center mb-4">Explore Our Features</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="feature-card text-center">
+                <img src="{{ url_for('static', filename='images/challenges.png') }}" alt="Challenges" class="img-fluid rounded">
+                <h4 class="mt-3">Cooking Challenges</h4>
+                <p>Join exciting cooking challenges and showcase your skills on the leaderboard.</p>
             </div>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No friend requests at this time.</p>
-    {% endif %}
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card text-center">
+                <img src="{{ url_for('static', filename='images/recipe_conversion.png') }}" alt="Recipe Conversion" class="img-fluid rounded">
+                <h4 class="mt-3">Recipe Conversion</h4>
+                <p>Convert recipe measurements with ease and make cooking simple.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card text-center">
+                <img src="{{ url_for('static', filename='images/social.png') }}" alt="Social Features" class="img-fluid rounded">
+                <h4 class="mt-3">Social Features</h4>
+                <p>Connect with friends, share posts, and stay engaged in the cooking community.</p>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
