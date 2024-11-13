@@ -2,15 +2,17 @@
 
 {% block content %}
 <div class="hero-section">
-    <div class="hero-content">
-        <h1>Welcome to CookMaster</h1>
-        <p>Your ultimate cooking assistant with social and challenge features.</p>
-        <a href="{{ url_for('user.challenges') }}" class="btn btn-neon">Explore Challenges</a>
+    <div class="hero-container">
+        <div class="hero-content">
+            <h1>Welcome to CookMaster</h1>
+            <p>Your ultimate cooking assistant with social and challenge features.</p>
+            <a href="{{ url_for('user.challenges') }}" class="btn btn-neon">Explore Challenges</a>
 
-         <!-- Floating Vegetables or Cooking Utensils -->
-        <img src="{{ url_for('static', filename='images/tomato.png') }}" alt="Tomato" class="floating-veg veg1">
-        <img src="{{ url_for('static', filename='images/whisk.png') }}" alt="Whisk" class="floating-veg veg2">
-        <img src="{{ url_for('static', filename='images/frying_pan.png') }}" alt="Frying_Pan" class="floating-veg veg3">
+            <!-- Floating Vegetables or Cooking Utensils -->
+            <img src="{{ url_for('static', filename='images/tomato.png') }}" alt="Tomato" class="floating-veg veg1">
+            <img src="{{ url_for('static', filename='images/whisk.png') }}" alt="Whisk" class="floating-veg veg2">
+            <img src="{{ url_for('static', filename='images/frying_pan.png') }}" alt="Frying Pan" class="floating-veg veg3">
+        </div>
     </div>
 </div>
 
@@ -43,4 +45,31 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Styles for the Hero Section Container */
+.hero-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #2e2e2e;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+
+.hero-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: #b0b0b0;
+}
+
+</style>
 {% endblock %}

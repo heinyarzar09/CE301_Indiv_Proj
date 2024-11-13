@@ -1,21 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="container">
-    <h1 class="mt-4">Challenges</h1>
+  <div class="challenge-page-container">
+    <h1 class="text-center mt-4">Challenges</h1>
+
     <!-- Display the user's remaining credits -->
-    <div class="alert alert-info" role="alert">
-      You have {{ remaining_credits }}  <i class="fas fa-gem"></i> credits remaining.
+    <div class="credits-banner alert alert-info text-center" role="alert">
+      You have {{ remaining_credits }} <i class="fas fa-gem"></i> credits remaining.
     </div>
 
-    <div class="row">
+    <div class="challenges-row row">
       {% for challenge in challenges %}
         <div class="col-md-4">
-          <div class="card mb-4">
+          <div class="card challenge-card mb-4">
             <img src="{{ url_for('static', filename='challenges/' ~ challenge.icon) }}" alt="{{ challenge.name }}" class="card-img-top">
-            <div class="card-body">
+            <div class="card-body text-center">
               <h5 class="card-title">{{ challenge.name }}</h5>
-              <p class="card-text">Credits required: {{ challenge.credits_required }}  <i class="fas fa-gem"></i> </p>
+              <p class="card-text">Credits required: {{ challenge.credits_required }} <i class="fas fa-gem"></i></p>
 
               <!-- Countdown timer -->
               <p class="card-text">
@@ -39,7 +40,29 @@
       {% endfor %}
     </div>
   </div>
+
+<style>
+/* Styling for the Heading */
+.challenge-page-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: #ffffff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4); /* Slight shadow for depth */
+}
+
+/* Styling for the Credits Banner */
+.credits-banner {
+    background-color: #394867; /* Subtle blue-gray background */
+    color: #f5f5f5; /* Lighter text for contrast */
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Soft shadow */
+}
+  </style>
 {% endblock %}
+
 
 
 {% block scripts %}

@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, url_for, flash, redirect, request
 from flask_login import current_user, login_required  # Flask-Login for managing user authentication
 from app import db, bcrypt  # Importing database instance and bcrypt for password hashing
 from app.forms import ResetPasswordForm, AdminAddCreditsForm, CreditApprovalForm # Importing form for resetting passwords
-from app.models import Challenge, ChallengeParticipant, CreditWithdrawRequest, PasswordResetRequest, Post, PostLike, ShoppingList, User, Friendship, CreditRequest, AdminNotification  # Importing User model for managing user data
+from app.models import Challenge, ChallengeParticipant, CreditWithdrawRequest, PasswordResetRequest, Post, PostLike, ShoppingList, User, Friendship, CreditRequest, AdminNotification, post_reports  # Importing User model for managing user data
 
 
 # Create a blueprint for admin-related routes
@@ -147,14 +147,25 @@ def admin_delete_user(user_id):
     try:
         user = User.query.get_or_404(user_id)
 
+        # Delete all related PasswordResetRequest records
+        PasswordResetRequest.query.filter_by(user_id=user.id).delete()
+
+        # Delete all related CreditRequest records
+        CreditRequest.query.filter_by(user_id=user.id).delete()
+
+        # Delete all related CreditWithdrawRequest records
+        CreditWithdrawRequest.query.filter_by(user_id=user.id).delete()
+
+        # Delete all post reports associated with the user's posts
+        db.session.execute(
+            post_reports.delete().where(post_reports.c.post_id.in_([post.id for post in user.posts]))
+        )
+
         # Delete or reassign all challenges created by the user
         challenges = Challenge.query.filter_by(creator_id=user.id).all()
         for challenge in challenges:
             db.session.delete(challenge)  # Delete the challenge
             # Alternatively, reassign the challenge if needed
-
-        # Delete all related CreditWithdrawRequest records
-        CreditWithdrawRequest.query.filter_by(user_id=user.id).delete()
 
         # Delete all related ChallengeParticipant records
         ChallengeParticipant.query.filter_by(user_id=user.id).delete()
@@ -189,6 +200,7 @@ def admin_delete_user(user_id):
         flash(f'An error occurred while trying to delete the user: {str(e)}', 'danger')
 
     return redirect(url_for('admin.manage_users'))
+
 
 
 @admin.route('/add_credits/<int:user_id>', methods=['POST'])

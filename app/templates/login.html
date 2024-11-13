@@ -30,7 +30,7 @@
         </div>
 
         <!-- Forgot Password link -->
-        <div class="form-group text-right mb-3">
+        <div class="form-group mb-3">
             <a href="{{ url_for('user.forgot_password') }}" class="forgot-password">Forgot Password?</a>
         </div>
 
@@ -40,6 +40,13 @@
         </div>
     </form>
 </div>
+
+<style>
+    .forgot-password {
+        display: block; /* Makes the link take the full width of the parent */
+        text-align: left; /* Aligns the text to the left */
+    }
+</style>
 
 <!-- JavaScript to toggle password visibility -->
 <script>

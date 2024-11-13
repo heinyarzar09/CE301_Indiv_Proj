@@ -1,42 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="container">
+<div class="container">
     <h1 class="my-4">Credit Request Status</h1>
-    
     {% if credit_requests %}
-      <ul class="list-group">
-        {% for request in credit_requests %}
-          <li class="list-group-item">
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="d-flex align-items-center">
-                <!-- Image with styling -->
-                <img src="{{ url_for('static', filename='payments/' ~ request.proof_image) }}" alt="Proof" class="img-fluid" style="max-width: 80px; border-radius: 5px; margin-right: 15px;">
+        <ul class="list-group">
+            {% for request in credit_requests %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <!-- Display the uploaded image with a small size -->
+                        <img src="{{ url_for('static', filename='payments/' ~ request.proof_image) }}" alt="Proof" style="max-width: 100px; border-radius: 5px; margin-right: 15px;">
 
-                <div class="request-details">
-                  <p class="mb-1">Date Submitted: {{ request.date_submitted.strftime('%Y-%m-%d') }}</p>
-                  <p>Credits Requested: {{ request.credits_requested }}</p>
-                </div>
-              </div>
+                        <div>
+                            <p class="mb-1">Date Submitted: {{ request.date_submitted.strftime('%Y-%m-%d') }}</p>
+                            <p class="mb-0">Status: 
+                                {% if request.status == 'Pending' %}
+                                    <span class="badge badge-warning">Pending</span>
+                                {% elif request.status == 'Approved' %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% elif request.status == 'Rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ request.status }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
 
-              <!-- Status Badge aligned to the right -->
-              <div class="status-badge text-right">
-                {% if request.status == 'Pending' %}
-                  <span class="badge badge-warning">Pending</span>
-                {% elif request.status == 'Approved' %}
-                  <span class="badge badge-success">Approved</span>
-                {% elif request.status == 'Rejected' %}
-                  <span class="badge badge-danger">Rejected</span>
-                {% else %}
-                  <span class="badge badge-secondary">{{ request.status }}</span>
-                {% endif %}
-              </div>
-            </div>
-          </li>
-        {% endfor %}
-      </ul>
+                    <!-- Align credits requested to the right -->
+                    <div class="credits-info text-right">
+                        <p class="mb-0">Credits Requested: {{ request.credits_requested }}</p>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
     {% else %}
-      <p>No credit requests found.</p>
+        <p>No credit requests found.</p>
     {% endif %}
-  </div>
+</div>
+
+<!-- Inline CSS to adjust alignment and spacing -->
+<style>
+
+    .list-group-item .credits-info {
+        flex-shrink: 0; /* Prevent the credits info from shrinking */
+        text-align: right; /* Align text to the right */
+    }
+
+    .list-group-item img {
+        border: 1px solid #444; /* Add border to the image for better visibility */
+    }
+
+    .badge {
+        font-size: 0.85rem; /* Slightly smaller badge font */
+    }
+</style>
 {% endblock %}
