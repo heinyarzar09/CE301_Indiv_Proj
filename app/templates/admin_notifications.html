@@ -15,7 +15,8 @@
                     <li class="list-group-item">
                         User: {{ request.user.username }} requested {{ request.amount }} credits.
                         <span class="text-muted">{{ request.timestamp }}</span>
-                        <a href="{{ url_for('admin.handle_credit_request', request_id=request.id) }}" class="btn btn-sm btn-primary float-right">Review</a>
+                        <!-- Adjusted URL call -->
+                        <a href="{{ url_for('admin.add_user_credits') }}" class="btn btn-sm btn-primary float-right">Review</a>
                     </li>
                 {% endfor %}
             </ul>
@@ -33,7 +34,8 @@
                     <li class="list-group-item">
                         User: {{ request.user.username }} requested to withdraw {{ request.amount }} credits.
                         <span class="text-muted">{{ request.timestamp }}</span>
-                        <a href="{{ url_for('admin.handle_withdraw_request', request_id=request.id) }}" class="btn btn-sm btn-primary float-right">Review</a>
+                        <!-- Adjusted URL call -->
+                        <a href="{{ url_for('admin.manage_withdraw_requests') }}" class="btn btn-sm btn-primary float-right">Review</a>
                     </li>
                 {% endfor %}
             </ul>
@@ -51,7 +53,8 @@
                     <li class="list-group-item">
                         User: {{ request.user.username }} requested a password reset.
                         <span class="text-muted">{{ request.timestamp }}</span>
-                        <a href="{{ url_for('admin.handle_password_reset', request_id=request.id) }}" class="btn btn-sm btn-primary float-right">Review</a>
+                        <!-- Adjusted URL call to use user_id -->
+                        <a href="{{ url_for('admin.admin_reset_password', user_id=request.user.id) }}" class="btn btn-sm btn-primary float-right">Review</a>
                     </li>
                 {% endfor %}
             </ul>

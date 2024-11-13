@@ -2,7 +2,6 @@
 
 {% block content %}
 <div class="hero-section">
-    <canvas id="particle-canvas"></canvas> <!-- Canvas for Three.js -->
     <div class="hero-content">
         <h1>Welcome to CookMaster</h1>
         <p>Your ultimate cooking assistant with social and challenge features.</p>
@@ -23,6 +22,7 @@
                 <img src="{{ url_for('static', filename='images/challenges.png') }}" alt="Challenges" class="img-fluid rounded">
                 <h4 class="mt-3">Cooking Challenges</h4>
                 <p>Join exciting cooking challenges and showcase your skills on the leaderboard.</p>
+                <a href="{{ url_for('user.leaderboard') }}" class="btn btn btn-primary">Leaderboard</a>
             </div>
         </div>
         <div class="col-md-4 mb-4">
@@ -30,6 +30,7 @@
                 <img src="{{ url_for('static', filename='images/recipe_conversion.png') }}" alt="Recipe Conversion" class="img-fluid rounded">
                 <h4 class="mt-3">Recipe Conversion</h4>
                 <p>Convert recipe measurements with ease and make cooking simple.</p>
+                <a href="{{ url_for('user.manual_conversion_tool') }}" class="btn btn btn-primary">Convert</a>
             </div>
         </div>
         <div class="col-md-4 mb-4">
@@ -37,6 +38,7 @@
                 <img src="{{ url_for('static', filename='images/social.png') }}" alt="Social Features" class="img-fluid rounded">
                 <h4 class="mt-3">Social Features</h4>
                 <p>Connect with friends, share posts, and stay engaged in the cooking community.</p>
+                <a href="{{ url_for('user.connect_friends') }}" class="btn btn btn-primary">Add Friends</a>
             </div>
         </div>
     </div>

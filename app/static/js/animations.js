@@ -1,33 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // ===========================
-    // GSAP Animations
-    // ===========================
-    
-    // Animate navbar
-    gsap.from(".navbar", {
-        duration: 0.8,
-        y: -40,
-        opacity: 0,
-        ease: "power2.out"
-    });
-
-    // Animate main content
-    gsap.from(".container", {
-        duration: 1,
-        y: 30,
-        opacity: 0,
-        ease: "power2.out",
-        delay: 0.3
-    });
-
-    // Animate footer
-    gsap.from("footer", {
-        duration: 0.7,
-        y: 20,
-        opacity: 0,
-        ease: "power2.out",
-        delay: 0.6
-    });
 
     // Hover animations for navbar links
     const navLinks = document.querySelectorAll('.nav-link');

@@ -1,8 +1,6 @@
 /* ===========================
    Global Styles
 =========================== */
-
-/* Global Styles */
 body {
     margin: 0;
     font-family: 'Chewy', sans-serif;
@@ -26,10 +24,6 @@ html {
     overflow-x: hidden;
 }
 
-.container {
-    flex: 1;
-}
-
 /* ===========================
    Navbar Styles
 =========================== */
@@ -45,7 +39,6 @@ html {
 }
 
 .navbar-brand {
-    font-weight: bold;
     color: #4a90e2;
 }
 
@@ -62,22 +55,6 @@ html {
 /* ===========================
    Hero Section Styles
 =========================== */
-.hero-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 80vh;
-    text-align: center;
-    background-color: #1c1c1e;
-    margin: 0 auto;
-    overflow: hidden;
-    border-radius: 15px;
-    max-width: 1000px;
-    padding: 20px;
-    position: relative;
-}
-
 #particle-canvas {
     position: absolute;
     top: 0;
@@ -111,19 +88,17 @@ html {
    Button Styles
 =========================== */
 .btn-neon {
-    background-color: #4a90e2;
-    color: white;
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: 30px;
-    font-size: 1.2rem;
-    transition: box-shadow 0.3s, transform 0.3s;
-    margin-top: 20px;
+    background-color: #00aaff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: all 0.3s;
 }
 
 .btn-neon:hover {
-    box-shadow: 0 0 20px rgba(74, 144, 226, 0.6);
-    transform: translateY(-5px);
+    background-color: #0077cc;
+    box-shadow: 0 0 15px rgba(0, 122, 204, 0.7);
+    transform: scale(1.05);
 }
 
 .btn-primary {
@@ -136,6 +111,16 @@ html {
     box-shadow: 0 0 20px rgba(74, 144, 226, 0.6);
     transform: translateY(-5px);
 }
+.btn-success{
+    background-color: #188a1c;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #23961d;
+    box-shadow: 0 0 20px rgba(47, 230, 41, 0.6);
+    transform: translateY(-5px);
+}
 
 .btn-danger {
     background-color: #d9534f;
@@ -143,9 +128,67 @@ html {
 }
 
 .btn-danger:hover {
-    background-color: #c9302c;
-    box-shadow: 0 0 20px rgba(221, 34, 44, 0.6);
+    background-color: #e83933;
+    box-shadow: 0 0 20px rgba(251, 60, 60, 0.6);
     transform: translateY(-5px);
+}
+
+/* Unfollow Button Hover Effect */
+.btn-unfollow {
+    background-color: #ffc107; /* Yellow color */
+    color: #212529; /* Dark text */
+    border: none;
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
+}
+
+.btn-unfollow:hover {
+    background-color: #e0a800; /* Darker yellow on hover */
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.6); /* Yellow glow effect */
+    transform: translateY(-5px); /* Lift effect */
+}
+
+/* Mark as Complete Button Hover Effect */
+.btn-complete {
+    background-color: #6c757d; /* Grey color */
+    color: #ffffff; /* White text */
+    border: none;
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
+}
+
+.btn-complete:hover {
+    background-color: #5a6268; /* Darker grey on hover */
+    box-shadow: 0 0 20px rgba(108, 117, 125, 0.6); /* Grey glow effect */
+    transform: translateY(-5px); /* Lift effect */
+}
+/* ===========================
+   Approved/Rejected status
+=========================== */
+
+.badge {
+    font-weight: 400; /* Make the font weight normal */
+    padding: 0.2em 0.4em; /* Reduce the padding */
+    border-radius: 0.25rem; /* Adjust the border radius for a slimmer look */
+    font-size: 0.85em; /* Optionally make the font size smaller */
+}
+
+.badge-warning {
+    background-color: #ffc107; /* Keep the yellow color */
+    color: #212529; /* Dark text for better contrast */
+}
+
+.badge-success {
+    background-color: #28a745; /* Keep the green color */
+    color: #fff; /* White text */
+}
+
+.badge-danger {
+    background-color: #dc3545; /* Keep the red color */
+    color: #fff; /* White text */
+}
+
+.badge-secondary {
+    background-color: #6c757d; /* Gray color for other statuses */
+    color: #fff; /* White text */
 }
 
 /* ===========================
@@ -215,10 +258,6 @@ html {
 /* ===========================
    Feature Cards
 =========================== */
-.features-section {
-    padding: 2rem 0;
-}
-
 .feature-card {
     background-color: #222;
     border-radius: 8px;
@@ -297,10 +336,14 @@ footer p {
 .list-group-item {
     background-color: #2a2a2e; /* Match the background with the list group */
     color: #d1d1d6; /* Light text color for list items */
-    border: 1px solid #3a3a3e; /* Subtle border for separation */
-    padding: 15px;
-    border-radius: 5px;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px; /* Add padding for spacing */
+    border: 1px solid #ccc; /* Light border */
+    border-radius: 5px; /* Rounded corners */
+    margin-bottom: 10px; /* Space between items */
 }
 
 .list-group-item:hover {
@@ -318,6 +361,74 @@ footer p {
 .shadow {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+/* ===========================
+   Leaderboard Table styling
+=========================== */
+.container {
+    color: white; /* Set text color to white for visibility */
+    padding-top: 20px; /* Add some padding at the top */
+    flex: 1;
+    margin: 0 auto;   /* Center the content horizontally */
+    text-align: left; /* Align text to the left for readability */
+}
+
+/* Headings styling */
+h1, h3 {
+    font-family: 'Chewy', cursive; /* Using the 'Chewy' font for headings */
+    color: white; /* Make sure headings are visible */
+    font-weight: 400;
+}
+
+.card-text strong {
+    font-weight: 400; /* Lighter font weight for "Ends in" text */
+}
+
+/* Countdown timer styling */
+.countdown-timer {
+    font-weight: 400; /* Lighter font weight for the timer */
+    color: #ffcc00; /* Keep the yellow color for emphasis */
+}
+
+/* Table styling for better readability */
+.table {
+    color: white; /* Table text color */
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Border for better visibility */
+}
+
+.table th {
+    font-weight: 400; /* Lighter font weight for table headers */
+    color: white; /* Ensure the text color remains white for visibility */
+}
+
+.table td {
+    font-weight: 300; /* Even lighter font weight for table content */
+    color: white; /* Text color for better visibility */
+}
+
+/* ===========================
+   Challenges
+=========================== */
+.card {
+    background-color: rgba(0, 0, 0, 0.8); /* Darker background for contrast */
+    color: #ffffff; /* White text for better visibility */
+    border: none; /* Remove border if you prefer a cleaner look */
+  }
+  
+  .card-title {
+    font-size: 1.25rem;
+    color: #ffcc00; /* Bright color for the title */
+  }
+  
+  .card-text {
+    color: #cccccc; /* Light grey text for better readability */
+  }
+  
+  .alert-info {
+    background-color: #17a2b8;
+    color: #ffffff;
+  }
 
 /* ===========================
    Responsive Design
@@ -341,4 +452,58 @@ footer p {
     h1, h3, h4, h5 {
         font-size: 1.2rem;
     }
+    .table {
+        font-size: 14px;
+    }
+}
+
+/* ===========================
+   Admin Home page
+=========================== */
+.quick-access-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.quick-access-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(0, 123, 255, 0.5); /* Blue shadow */
+}
+
+.hover-effect {
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.hover-effect:hover {
+    background-color: #005b9f; /* Hover color similar to user's page */
+    box-shadow: 0 0 20px rgba(74, 144, 226, 0.6);
+}
+
+/* ===========================
+   Login Page
+=========================== */
+.login-container {
+    max-width: 600px; /* Set a fixed width */
+    margin: 0 auto;   /* Center horizontally */
+    padding: 50px;
+    background-color: #1a1a2e; /* add a background color for better visibility */
+    border-radius: 10px;       /* Add rounded corners */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* add a shadow for a subtle effect */
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%; /* Make input fields fill the container width */
+    padding: 10px; /* Reduce padding to make them less tall */
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.forgot-password {
+    display: block;
+    text-align: right;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #00aaff;
 }

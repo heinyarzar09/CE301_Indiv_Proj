@@ -308,16 +308,17 @@ def share_post():
 
     form = SharePostForm()
 
-    # Retrieve all challenges that the user has joined (without filtering by active status)
+    # Retrieve all challenges that the user has joined and are still active (not ended)
     active_challenges = Challenge.query.join(ChallengeParticipant).filter(
         ChallengeParticipant.user_id == current_user.id,
-        ChallengeParticipant.challenge_id == Challenge.id
+        ChallengeParticipant.challenge_id == Challenge.id,
+        Challenge.ended == False  # Filter out challenges that have ended
     ).all()
 
-    # Debugging line: Print the list of challenges the user has joined
-    print("Joined Challenges for User:", [(challenge.id, challenge.name) for challenge in active_challenges])
+    # Debugging line: Print the list of active challenges the user has joined
+    print("Active Challenges for User:", [(challenge.id, challenge.name) for challenge in active_challenges])
 
-    # Populate the challenge dropdown with joined challenges
+    # Populate the challenge dropdown with active joined challenges
     form.challenge.choices = [(0, "No Challenge")] + [(challenge.id, challenge.name) for challenge in active_challenges]
 
     if form.validate_on_submit():
@@ -355,7 +356,7 @@ def share_post():
 
         db.session.commit()
         flash('Your post has been shared!', 'success')
-        return redirect(url_for('user.index'))
+        return redirect(url_for('user.view_posts'))
 
     # Debug: Check if form validation failed and why
     if form.errors:
@@ -368,12 +369,16 @@ def share_post():
 @user.route('/view_posts')
 @login_required
 def view_posts():
+    # Retrieve all friends of the current user
     friends = Friendship.query.filter_by(user_id=current_user.id).all()
     friend_ids = [friend.friend_id for friend in friends]
     friend_ids.append(current_user.id)  # Include the current user in the posts
-    
-    posts = Post.query.filter(Post.user_id.in_(friend_ids)).order_by(Post.date_posted.desc()).all()
-    
+
+    # Query posts from friends and the current user, ordered by date, and eager load challenges
+    posts = Post.query.filter(Post.user_id.in_(friend_ids)) \
+                      .options(db.joinedload(Post.challenge)) \
+                      .order_by(Post.date_posted.desc()).all()
+
     if not posts:
         flash('No posts to show', 'info')
     
@@ -431,6 +436,27 @@ def like_post(post_id):
     
     db.session.commit()
     return redirect(request.referrer or url_for('user.posts'))
+
+
+# In user_routes.py
+@user.route('/report_post/<int:post_id>', methods=['POST'])
+@login_required
+def report_post(post_id):
+    post = Post.query.get_or_404(post_id)
+
+    # Check if the user has already reported the post
+    if current_user in post.reported_by:
+        flash("You have already reported this post.", "info")
+        return redirect(url_for('user.view_posts'))
+
+    # Increment the reports count
+    post.reports += 1
+    post.reported_by.append(current_user)  # Assuming you have a relationship to track users who reported the post
+    db.session.commit()
+
+    flash("Post has been reported.", "success")
+    return redirect(url_for('user.view_posts'))
+
 
 
 @user.route('/approve_friend_request/<int:request_id>', methods=['POST'])

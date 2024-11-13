@@ -16,12 +16,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+        <a class="navbar-brand">CookMaster</a>
+
+        {% if current_user.is_authenticated %}
+        <span class="navbar-text text-white ml-3">
+        Admin Name: {{ current_user.username }}
+        </span>
+        {% endif %}
+        
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <!-- Home Page -->

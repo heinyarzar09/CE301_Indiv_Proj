@@ -5,7 +5,7 @@
     <h1 class="mt-4">Challenges</h1>
     <!-- Display the user's remaining credits -->
     <div class="alert alert-info" role="alert">
-      You have {{ remaining_credits }} credits remaining.
+      You have {{ remaining_credits }}  <i class="fas fa-gem"></i> credits remaining.
     </div>
 
     <div class="row">
@@ -15,7 +15,7 @@
             <img src="{{ url_for('static', filename='challenges/' ~ challenge.icon) }}" alt="{{ challenge.name }}" class="card-img-top">
             <div class="card-body">
               <h5 class="card-title">{{ challenge.name }}</h5>
-              <p class="card-text">Credits required: {{ challenge.credits_required }}</p>
+              <p class="card-text">Credits required: {{ challenge.credits_required }}  <i class="fas fa-gem"></i> </p>
 
               <!-- Countdown timer -->
               <p class="card-text">
@@ -35,7 +35,7 @@
           </div>
         </div>
       {% else %}
-        <p>No challenges available.</p>
+        <p class="text-muted">No challenges available.</p>
       {% endfor %}
     </div>
   </div>

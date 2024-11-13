@@ -25,7 +25,7 @@
                     <td>{{ request.credits_requested }}</td>
                     <td>{{ request.payment_mode }}</td>
                     <td>{{ request.phone_number }}</td>
-                    <td>{{ request.date_requested.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ request.date_requested.strftime('%Y-%m-%d') }}</td>
                     <td>
                         {% if request.status == 'Approved' %}
                             <span class="text-success">{{ request.status }}</span>
@@ -35,7 +35,7 @@
                     </td>
                     <td>
                         {% if request.date_approved %}
-                            {{ request.date_approved.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {{ request.date_approved.strftime('%Y-%m-%d') }}
                         {% else %}
                             N/A
                         {% endif %}

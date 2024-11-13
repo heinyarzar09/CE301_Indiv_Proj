@@ -29,10 +29,10 @@
                     </span>
                     <span>
                         <form method="POST" action="{{ url_for('user.complete_item', item_id=item.id) }}" style="display: inline;">
-                            <button type="submit" class="btn btn-sm btn-{{ 'success' if item.completed else 'secondary' }}">
+                            <button type="submit" class="btn btn-sm {{ 'btn-success' if item.completed else 'btn-secondary' }}">
                                 {{ 'Completed' if item.completed else 'Mark as Completed' }}
                             </button>
-                        </form>
+                        </form>                        
                         <form method="POST" action="{{ url_for('user.delete_item', item_id=item.id) }}" style="display: inline;">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>

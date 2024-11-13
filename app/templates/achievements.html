@@ -8,15 +8,15 @@
       <ul class="list-group">
         {% for challenge in completed_challenges %}
           <li class="list-group-item">
-            <div class="row">
-              <div class="col-md-3">
-                <!-- Display Challenge Image -->
+            <div class="d-flex align-items-center">
+              <div class="achievement-image">
                 <img src="{{ url_for('static', filename='challenges/' + challenge.image) }}" alt="{{ challenge.name }}" class="img-fluid" style="max-width: 100px; max-height: 100px;">
               </div>
-              <div class="col-md-9">
+              <div class="achievement-details" style="margin-left: 15px;">
                 <h5>{{ challenge.name }}</h5>
-                <p>Completed on: {{ challenge.completion_time }}</p>
-                <p>Credits Won: {{ challenge.credits }}</p>
+                <!-- Only show the date part -->
+                <p>Completed on: {{ challenge.completion_time[:10] }}</p>
+                <p>Credits Won: {{ challenge.credits }} <i class="fas fa-gem"></i></p>
               </div>
             </div>
           </li>
@@ -27,3 +27,6 @@
     {% endif %}
   </div>
 {% endblock %}
+
+
+

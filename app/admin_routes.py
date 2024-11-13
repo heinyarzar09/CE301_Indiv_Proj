@@ -56,14 +56,31 @@ def manage_posts():
         post_id = request.form.get("post_id")
         post = Post.query.get_or_404(post_id)
 
-        # Delete the post and commit the changes
+        # Store the user_id and challenge_id before deleting the post
+        user_id = post.user_id
+        challenge_id = post.challenge_id
+
+        # Delete the post
         db.session.delete(post)
+
+        # Query the ChallengeParticipant instance for the post's user and challenge
+        challenge_participant = ChallengeParticipant.query.filter_by(
+            user_id=user_id, challenge_id=challenge_id
+        ).first()
+
+        # Decrement the progress if it's greater than 0
+        if challenge_participant and challenge_participant.progress > 0:
+            challenge_participant.progress -= 1
+            db.session.add(challenge_participant)  # Add the instance to the session
+
+        # Commit the changes
         db.session.commit()
 
         flash("Post deleted successfully.", "success")
         return redirect(url_for('admin.manage_posts'))
 
     return render_template('admin_manage_posts.html', posts=posts)
+
 
 
 # In admin_routes.py

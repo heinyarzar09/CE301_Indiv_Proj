@@ -37,6 +37,7 @@ class User(db.Model, UserMixin):
     # New relationship to achievements
     achievements = db.relationship('Achievement', backref='user', lazy=True, cascade="all, delete-orphan")
 
+
 # In your models.py file
 class PasswordResetRequest(db.Model):
     __tablename__ = 'password_reset_request'
@@ -70,6 +71,13 @@ class Achievement(db.Model):
     credits_won = db.Column(db.Integer, nullable=False)
     completion_time = db.Column(db.DateTime, nullable=False)  # Store when the achievement was completed
 
+
+# Define the association table for users who reported posts
+post_reports = db.Table('post_reports',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id', ondelete='CASCADE'), primary_key=True)
+)
+
 # Define the Post model to store users' shared posts, such as recipe posts with images and messages
 class Post(db.Model):
     __tablename__ = 'post'
@@ -78,16 +86,33 @@ class Post(db.Model):
     image_file = db.Column(db.String(100), nullable=False)
     message = db.Column(db.Text, nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
-    # post_id = db.Column(db.Integer, db.ForeignKey('post.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=True)
+    reports = db.Column(db.Integer, default=0)
 
-    # Relationship to user
+    # Relationships
+    likes = db.relationship('PostLike', backref='liked_post', cascade="all, delete-orphan")
     user = db.relationship('User', backref='user_posts')
+    challenge = db.relationship('Challenge', backref='posts', lazy=True)
+    
+    # New relationship to track users who reported the post
+    reported_by = db.relationship('User', secondary=post_reports, backref='reported_posts')
 
     def is_liked_by(self, user):
-            return any(like.user_id == user.id for like in self.likes)
+        return any(like.user_id == user.id for like in self.likes)
 
+    def is_reported_by(self, user):
+        return user in self.reported_by
+
+    # Method to decrement challenge progress
+    def decrement_challenge_progress(self):
+        if self.challenge_id:
+            challenge = Challenge.query.get(self.challenge_id)
+            if challenge and challenge.progress > 0:
+                challenge.progress -= 1
+                db.session.commit()
+
+                
 class PostLike(db.Model):
     __tablename__ = 'post_likes'
 
@@ -95,7 +120,7 @@ class PostLike(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-    post = db.relationship('Post', backref='likes')
+    # Relationship to user
     user = db.relationship('User', backref='liked_posts')
 
 # Define the Friendship model to represent the relationship between users (user friendships)

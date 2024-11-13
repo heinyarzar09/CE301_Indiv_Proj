@@ -10,45 +10,50 @@
         <p class="lead">Here you can manage users, credits, posts, and more.</p>
     </div>
 
-    <!-- Quick Access Cards -->
+    <!-- Quick Access Cards with Images -->
     <div class="row text-center mb-4">
         <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-white h-100">
+            <div class="card bg-dark text-white h-100 quick-access-card">
+                <img src="{{ url_for('static', filename='images/manage_users.png') }}" alt="Manage Users" class="card-img-top img-fluid">
                 <div class="card-body">
                     <h5 class="card-title">Manage Users</h5>
                     <p class="card-text">View and manage all registered users.</p>
-                    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-primary">Go</a>
+                    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-primary hover-effect">Manage Users</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-white h-100">
+            <div class="card bg-dark text-white h-100 quick-access-card">
+                <img src="{{ url_for('static', filename='images/credit_requests.png') }}" alt="Credit Requests" class="card-img-top img-fluid">
                 <div class="card-body">
                     <h5 class="card-title">Credit Requests</h5>
                     <p class="card-text">Handle user credit requests efficiently.</p>
-                    <a href="{{ url_for('admin.add_user_credits') }}" class="btn btn-primary">Go</a>
+                    <a href="{{ url_for('admin.add_user_credits') }}" class="btn btn-primary hover-effect">See Requests</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-white h-100">
+            <div class="card bg-dark text-white h-100 quick-access-card">
+                <img src="{{ url_for('static', filename='images/withdraw_requests.png') }}" alt="Withdraw Requests" class="card-img-top img-fluid">
                 <div class="card-body">
                     <h5 class="card-title">Withdraw Requests</h5>
                     <p class="card-text">Approve or reject user withdrawals.</p>
-                    <a href="{{ url_for('admin.manage_withdraw_requests') }}" class="btn btn-primary">Go</a>
+                    <a href="{{ url_for('admin.manage_withdraw_requests') }}" class="btn btn-primary hover-effect">See Withdrawals</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-white h-100">
+            <div class="card bg-dark text-white h-100 quick-access-card">
+                <img src="{{ url_for('static', filename='images/manage_posts.png') }}" alt="Manage Posts" class="card-img-top img-fluid">
                 <div class="card-body">
                     <h5 class="card-title">Manage Posts</h5>
                     <p class="card-text">Oversee and moderate user content.</p>
-                    <a href="{{ url_for('admin.manage_posts') }}" class="btn btn-primary">Go</a>
+                    <a href="{{ url_for('admin.manage_posts') }}" class="btn btn-primary hover-effect">Manage Posts</a>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Recent Activity Section -->
     <div class="recent-activity">

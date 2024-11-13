@@ -13,12 +13,13 @@
                     <th>Message</th>
                     <th>Image</th>
                     <th>Date Posted</th>
+                    <th>Reports</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for post in posts %}
-                <tr>
+                <tr class="{% if post.reports > 0 %}table-danger{% endif %}">
                     <td>{{ post.user.username }}</td>
                     <td>{{ post.message }}</td>
                     <td>
@@ -28,7 +29,8 @@
                             No Image
                         {% endif %}
                     </td>
-                    <td>{{ post.date_posted.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ post.date_posted.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ post.reports }}</td>
                     <td>
                         <form method="POST" action="{{ url_for('admin.manage_posts') }}" onsubmit="return confirm('Are you sure you want to delete this post?');">
                             <input type="hidden" name="post_id" value="{{ post.id }}">

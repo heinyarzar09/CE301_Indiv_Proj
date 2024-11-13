@@ -24,7 +24,7 @@
                     <td>{{ request.credits_requested }}</td>
                     <td>{{ request.payment_mode }}</td>
                     <td>{{ request.phone_number }}</td>
-                    <td>{{ request.date_requested.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ request.date_requested.strftime('%Y-%m-%d') }}</td>
                     <td>
                         <form method="POST" action="{{ url_for('admin.manage_withdraw_requests') }}">
                             <input type="hidden" name="request_id" value="{{ request.id }}">

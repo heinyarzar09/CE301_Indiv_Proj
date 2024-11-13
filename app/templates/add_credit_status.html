@@ -1,42 +1,42 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
+  <div class="container">
     <h1 class="my-4">Credit Request Status</h1>
+    
     {% if credit_requests %}
-        <ul class="list-group">
-            {% for request in credit_requests %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <!-- Display the uploaded image with a small size -->
-                        <img src="{{ url_for('static', filename='payments/' ~ request.proof_image) }}" alt="Proof" style="max-width: 100px;">
+      <ul class="list-group">
+        {% for request in credit_requests %}
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <!-- Image with styling -->
+                <img src="{{ url_for('static', filename='payments/' ~ request.proof_image) }}" alt="Proof" class="img-fluid" style="max-width: 80px; border-radius: 5px; margin-right: 15px;">
 
-                        <div>
-                            <p><strong>Date Submitted:</strong> {{ request.date_submitted.strftime('%Y-%m-%d %H:%M') }}</p>
-                            <p><strong>Status:</strong> 
-                                {% if request.status == 'Pending' %}
-                                    <span class="badge badge-warning">Pending</span>
-                                {% elif request.status == 'Approved' %}
-                                    <span class="badge badge-success">Approved</span>
-                                {% elif request.status == 'Rejected' %}
-                                    <span class="badge badge-danger">Rejected</span>
-                                {% else %}
-                                    <span class="badge badge-secondary">{{ request.status }}</span>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
+                <div class="request-details">
+                  <p class="mb-1">Date Submitted: {{ request.date_submitted.strftime('%Y-%m-%d') }}</p>
+                  <p>Credits Requested: {{ request.credits_requested }}</p>
+                </div>
+              </div>
 
-                    <!-- Additional space for other info or options -->
-                    <div class="text-right">
-                        <p><strong>Credits Requested:</strong> {{ request.credits_requested }}</p>
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
+              <!-- Status Badge aligned to the right -->
+              <div class="status-badge text-right">
+                {% if request.status == 'Pending' %}
+                  <span class="badge badge-warning">Pending</span>
+                {% elif request.status == 'Approved' %}
+                  <span class="badge badge-success">Approved</span>
+                {% elif request.status == 'Rejected' %}
+                  <span class="badge badge-danger">Rejected</span>
+                {% else %}
+                  <span class="badge badge-secondary">{{ request.status }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
     {% else %}
-        <p>No credit requests found.</p>
+      <p>No credit requests found.</p>
     {% endif %}
-</div>
-
+  </div>
 {% endblock %}
