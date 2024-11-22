@@ -83,7 +83,7 @@ def manage_posts():
 
 
 
-# In admin_routes.py
+# Route to view passowrd reset
 @admin.route('/view_password_reset_requests')
 @login_required
 def view_password_reset_requests():
@@ -203,27 +203,22 @@ def admin_delete_user(user_id):
 
 
 
-@admin.route('/add_credits/<int:user_id>', methods=['POST'])
-@login_required
-def add_credits(user_id):
-    user = User.query.get_or_404(user_id)
-    form = AdminAddCreditsForm()
+# @admin.route('/add_credits/<int:user_id>', methods=['POST'])
+# @login_required
+# def add_credits(user_id):
+#     user = User.query.get_or_404(user_id)
+#     form = AdminAddCreditsForm()
     
-    if form.validate_on_submit():
-        user.credits += form.credits.data
-        db.session.commit()
-        flash(f'{form.credits.data} credits added to {user.username}', 'success')
-        return redirect(url_for('admin.manage_users'))
+#     if form.validate_on_submit():
+#         user.credits += form.credits.data
+#         db.session.commit()
+#         flash(f'{form.credits.data} credits added to {user.username}', 'success')
+#         return redirect(url_for('admin.manage_users'))
     
-    return render_template('add_credits.html', form=form, user=user)
+#     return render_template('add_credits.html', form=form, user=user)
 
 
-@admin.route('/credit_request_history')
-@login_required
-def credit_request_history():
-    # Retrieve all approved and rejected credit requests
-    credit_requests = CreditRequest.query.filter(CreditRequest.status.in_(['Approved', 'Rejected'])).order_by(CreditRequest.date_submitted.desc()).all()
-    return render_template('admin_credit_request_history.html', credit_requests=credit_requests)
+
 
 
 @admin.route('/add_user_credits', methods=['GET', 'POST'])
@@ -265,6 +260,14 @@ def add_user_credits():
     
     # Render the page with pending requests
     return render_template('admin_add_user_credits.html', pending_requests=pending_requests)
+
+
+@admin.route('/credit_request_history')
+@login_required
+def credit_request_history():
+    # Retrieve all approved and rejected credit requests
+    credit_requests = CreditRequest.query.filter(CreditRequest.status.in_(['Approved', 'Rejected'])).order_by(CreditRequest.date_submitted.desc()).all()
+    return render_template('admin_credit_request_history.html', credit_requests=credit_requests)
 
 
 @admin.route('/manage_withdraw_requests', methods=['GET', 'POST'])

@@ -290,7 +290,7 @@ class CreditWithdrawRequest(db.Model):
     credits_requested = db.Column(db.Integer, nullable=False)
     payment_mode = db.Column(db.String(20), nullable=False)
     phone_number = db.Column(db.String(15), nullable=True)
-    date_requested = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    date_requested = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     date_approved = db.Column(db.DateTime)
     
     user = db.relationship('User', backref='credit_withdraw_requests')

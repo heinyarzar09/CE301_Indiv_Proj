@@ -17,7 +17,7 @@
             <tbody>
                 {% for withdraw in withdrawals %}
                 <tr>
-                    <td>{{ withdraw.date_requested.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ withdraw.date_requested.strftime('%Y-%m-%d') }}</td>
                     <td>{{ withdraw.credits_requested }}</td>
                     <td>{{ withdraw.payment_mode }}</td>
                     <td>{{ withdraw.phone_number }}</td>
