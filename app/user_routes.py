@@ -4,10 +4,9 @@ from PIL import Image
 from app import db, bcrypt
 from app.forms import ForgotPasswordForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, JoinChallengeForm, CreditRequestForm, WithdrawForm
 from app.models import CreditWithdrawRequest, PasswordResetRequest, PostLike, ShoppingList, User, Tool, Achievement, Friendship, Post, Challenge, ChallengeParticipant, db, CreditRequest, AdminNotification
-from app.utils import convert_measurement, process_recipe, get_all_users_except_current, get_friends_for_user, get_incoming_friend_requests, get_outgoing_friend_requests, get_incoming_friend_requests, get_recent_follows
-from app.forms import AchievementTrackingForm, ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm, JoinChallengeForm 
+from app.utils import convert_measurement, process_recipe
+from app.forms import ChallengeForm, RegisterForm, LoginForm, ConversionForm, ToolForm, RecipeConversionForm, SharePostForm, ChallengeForm
 from datetime import datetime, timedelta, timezone
-from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from fractions import Fraction  # Import the Fraction class
@@ -96,7 +95,7 @@ def register():
     return render_template('register.html', title='Register', form=form)
 
 
-# In user_routes.py
+# Route for forgetting password
 @user.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     form = ForgotPasswordForm()  # A form with fields for username and email
@@ -451,7 +450,8 @@ def report_post(post_id):
 
     # Increment the reports count
     post.reports += 1
-    post.reported_by.append(current_user)  # Assuming you have a relationship to track users who reported the post
+    # Assuming you have a relationship to track users who reported the post
+    post.reported_by.append(current_user)
     db.session.commit()
 
     flash("Post has been reported.", "success")
@@ -880,7 +880,7 @@ def add_credits():
     
     if form.validate_on_submit():
         # Save the payment proof image
-        proof_image_filename = save_image(form.proof.data, folder='payments')  # Make sure 'payments' folder exists in /static
+        proof_image_filename = save_image(form.proof.data, folder='payments')
 
         # Step 1: Create and commit the credit request first to ensure it has an ID
         credit_request = CreditRequest(
@@ -984,3 +984,5 @@ def delete_item(item_id):
     db.session.commit()
     flash('Item removed from shopping list!', 'info')
     return redirect(url_for('user.shopping_list'))
+
+
