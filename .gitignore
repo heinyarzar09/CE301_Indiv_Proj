@@ -4,3 +4,5 @@
 # Python cache files
 __pycache__/
 *.pyc
+
+venv/
